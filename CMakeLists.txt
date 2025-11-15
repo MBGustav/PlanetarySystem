@@ -63,9 +63,8 @@ target_include_directories(common_libs INTERFACE
 )
 
 ########################################################
-
-
 # Create the main executable
+########################################################
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     imgui
@@ -78,10 +77,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 
 ########################################################
-# Samples for testing packages
+# Samples for testing purposes
 ########################################################
 set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
 add_executable(sample_imgui "${SAMPLES_DIR}/imgui.cpp")
 target_link_libraries(sample_imgui PRIVATE 
+    common_libs
+)
+
+
+add_executable(render3D "${SAMPLES_DIR}/render3D.cpp")
+target_link_libraries(render3D PRIVATE 
     common_libs
 )
