@@ -6,6 +6,12 @@
 #include <glad/glad.h>
 #include <iostream>
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
 
 class WindowManager {
 public:
@@ -17,6 +23,7 @@ public:
     void pollEvents();
     GLFWwindow* getHandle() const; // para passar ao Camera, etc.
     float getAspectRatio();
+    void SetBackground();
 
 private:
     GLFWwindow* p_window;
@@ -25,12 +32,21 @@ private:
     int get_height() const { return height; }
 };
 
+float getDeltaTime()
+{
+    static float lastFrame = 0.0f;
+    float currentFrame = static_cast<float>(glfwGetTime());
+    float deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    return deltaTime;
+}
+
 
 WindowManager::WindowManager(int width, int height, const std::string& title)
     : width(width), height(height)
 {
     if (!glfwInit()) {
-        std::cerr << "Erro ao inicializar GLFW\n";
+        std::cerr << "Error initializing Window\n";
         std::exit(EXIT_FAILURE);
     }
 
@@ -78,7 +94,14 @@ GLFWwindow* WindowManager::getHandle() const {
     return p_window;
 }
 
+void WindowManager::SetBackground(){
+    glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 
 float WindowManager::getAspectRatio(){
     return static_cast<float>(get_width()) / static_cast<float>(get_height());
 }
+
+
