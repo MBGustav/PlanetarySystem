@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.15)
 
 project(ProjecCpp)
 set(SOURCES main.cpp)
-
+#hello 
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external")
 set(IMGUI_DIR "${LIB_DIR}/imgui")
 
-set(GLM_LINK_FLAGS "-lm")
+ set(GLM_LINK_FLAGS "-lm")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GLM_LINK_FLAGS}")
 
 find_package(glfw3 REQUIRED)
