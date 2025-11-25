@@ -45,7 +45,6 @@ target_include_directories(imgui PUBLIC
 )
 ########################################################
 # Creating a Common Libraries Interface
-#https://cmake.org/cmake/help/latest/command/add_library.html#interface-libraries
 ########################################################
 add_library(common_libs INTERFACE)
 
@@ -80,13 +79,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 # Samples for testing purposes
 ########################################################
 set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
-add_executable(sample_imgui "${SAMPLES_DIR}/imgui.cpp")
-target_link_libraries(sample_imgui PRIVATE 
+
+add_executable(imgui_sample "${SAMPLES_DIR}/imgui_sample.cpp")
+target_link_libraries(imgui_sample PRIVATE 
     common_libs
 )
 
 
-add_executable(render3D "${SAMPLES_DIR}/render3D.cpp")
-target_link_libraries(render3D PRIVATE 
+add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
+target_link_libraries(CorpSimulation PRIVATE 
     common_libs
 )
