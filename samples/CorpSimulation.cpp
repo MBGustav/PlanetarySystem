@@ -90,22 +90,32 @@ void apply_newton_law(vector<PlanetProperties> &planets)
     for(int i = 0; i < planets.size(); i++){
         A = &planets[i];
         for(int j = i + 1; j < planets.size(); j++){
-            B = &planets[j];
-            MA = A->get_mass();
-            MB = B->get_mass();
+            // B = &planets[j];
+            // MA = A->get_mass();
+            // MB = B->get_mass();
             
 
-            glm::vec3 dir = B->get_position() - A->get_position();
-            float dist = glm::length(dir);
-            if (dist < 0.000001f) continue;
-            glm::vec3 norm = dir / dist;
+            // glm::vec3 dir = B->get_position() - A->get_position();
+            // float dist = glm::length(dir);
+            // if (dist < 0.000001f) continue;
+            // glm::vec3 norm = dir / dist;
 
-            float F_scal = (G * MA * MB) / (dist * dist);
-            glm::vec3 F = norm * F_scal;
+            // float F_scal = (G * MA * MB) / (dist * dist);
+            // glm::vec3 F = norm * F_scal;
 
-            A->applyForce(F);
-            B->applyForce(-F);
+            // A->accumulateForce(F);
+            // B->accumulateForce(-F);
+
+            B = &planets[j];
+            Force = A->apply_newton_law(*B);
+            A->accumulateForce(-Force);
+            B->accumulateForce(+Force);
+
         }
+    }
+
+    for (auto &itr : planets) {
+        itr.update(deltaTime);
     }
 
 
@@ -153,12 +163,12 @@ int main() {
 
     std::vector<PlanetProperties> planets;
 
-    PlanetProperties p1(glm::vec3(-1.5f, 0.0f, 0.0f),
+    PlanetProperties p1(glm::vec3(-0.5f, 0.0f, 0.0f),
                         glm::vec3(0,0,0),
                         glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
                         "P1");
     
-    PlanetProperties p2(glm::vec3(1.5f, 0.0f, 0.0f),
+    PlanetProperties p2(glm::vec3(0.5f, 0.0f, 0.0f),
                         glm::vec3(0,0,0),
                         glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
                         "P2");

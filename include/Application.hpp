@@ -5,6 +5,8 @@
 #pragma once
 
 #include "ImguiLayer.hpp"
+#include "SimulationWrapper.hpp"
+
 // imgui.h is included inside ImguiLayer.hpp, but can be included here if needed
 // #include "imgui.h" 
 
@@ -16,7 +18,10 @@ class Application
     gui::ImguiLayer uiLayer;
     
     // Graphics -- for the simulation
+    
+
     // Simulation -- just calc and maths
+    SimulationWrapper simWrapper;
     
     public:
     
@@ -31,6 +36,12 @@ inline void Application::setup()
 {
     // Setup ImGui Layer
     uiLayer.setup();
+    
+    // Setup Graphics Layer
+    
+    // Setup Simulation Layer
+    
+
 }   
 
 inline Application::Application()

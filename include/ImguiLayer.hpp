@@ -7,6 +7,9 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include <stdexcept>
+#include <cstdio>
+#include <iostream>
+
 
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section, void* user_data);
 extern ImGuiDemoMarkerCallback      GImGuiDemoMarkerCallback;
@@ -15,19 +18,8 @@ ImGuiDemoMarkerCallback             GImGuiDemoMarkerCallback = NULL;
 void*                               GImGuiDemoMarkerCallbackUserData = NULL;
 #define IMGUI_DEMO_MARKER(section)  do { if (GImGuiDemoMarkerCallback != NULL) GImGuiDemoMarkerCallback("imgui_demo.cpp", __LINE__, section, GImGuiDemoMarkerCallbackUserData); } while (0)
 
-
-#include <stdexcept>
-#include <cstdio>
-#include <iostream>
-
 // Graphic & UI Includes
 // NOTE: Ensure these files exist in your include path
-#include <glad/glad.h>   // Initialize GLAD before GLFW
-#include <GLFW/glfw3.h>
-
-#include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
 
 namespace gui
 {
@@ -323,20 +315,25 @@ namespace gui
 
     inline void ImguiLayer::SimulationWindow()
     {
-        // hide the Welcome window
-        
 
-        // Static variables to hold state just for this UI demo
+        //2. Control Panel Variables
         static float timeScale = 1.0f;
         static bool isPaused = true;
         static int iterations = 100;
         static float gravity[3] = { 0.0f, -9.81f, 0.0f };
         static bool showGrid = true;
         
+
+        // 3. Planet Management Variables
+        const char* items[] = { "", "Earth", "Mars", "Pluto", "Sun" };
+        static int item = 0;
+        static float planet_parameters[3] = { 1.0f, 2.0f, 3.0f }; // radius, mass, velocity
+        
+
         // ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);
         // Get the viewport of the main window (the OS window)
         ImGuiViewport* viewport = ImGui::GetMainViewport();
-        
+        WMData.ShowWelcomeWindow = false;
         // Force the ImGui window to cover the whole viewport
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
@@ -361,6 +358,7 @@ namespace gui
                     }
                     ImGui::EndMenu();
                 }
+
                 if (ImGui::BeginMenu("View"))
                 {
                     ImGui::MenuItem("Show Grid", "", &showGrid);
@@ -408,9 +406,44 @@ namespace gui
             }
             ImGui::EndChild();
 
-            ImGui::SameLine(); // Puts the next child to the right of the previous one
+            // 3. Left Sidebar(Planets management)
+            ImGui::BeginChild("Controls", ImVec2(250, -150), true);
+            {
+                ImGui::Separator();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Planet Manager");
+                ImGui::Spacing();
 
+                // Playback controls
+                ImGui::Combo("Object", &item, items, IM_ARRAYSIZE(items)); //ImGui::SameLine();
+                ImGui::SliderFloat("Radius", &planet_parameters[0], 0.0f, 5.0f); //ImGui::SameLine();
+                ImGui::SliderFloat("Mass", &planet_parameters[1], 0.0f, 5.0f); //ImGui::SameLine();
+                ImGui::SliderFloat("Velocity", &planet_parameters[2], 0.0f, 5.0f);
+                ImGui::Spacing();
+
+                // ImGui::SameLine();
+                if (ImGui::Button("SAVE / SET", ImVec2(80, 30))) {
+                    //send values to simulation (TODO)
+                }
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Text("System Status");
+                
+                // Read-only text
+                ImGui::Text("Object: %s", item == -1 ? "" : items[item]);
+                ImGui::Text("Velocity(m/s): %.1f", 40.0f);
+                ImGui::Text("Acceleration(m/s²): %.1f", 100.0f);
+
+                // if (isPaused) ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: PAUSED");
+                // else          ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: RUNNING");
+            }
+            ImGui::EndChild();
+
+
+
+            //Simulation Window Layout Separation
             // 3. Right Viewport (Visualization)
+            ImGui::SameLine(); // Puts the next child to the right of the previous one
             // -------------------------------------------------
             ImGui::BeginGroup();
             {
