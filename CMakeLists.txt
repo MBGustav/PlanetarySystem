@@ -90,3 +90,13 @@ add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
 target_link_libraries(CorpSimulation PRIVATE 
     common_libs
 )
+
+add_executable(imgui_glad_cube "${SAMPLES_DIR}/imgui_glad_cube.cpp")
+target_link_libraries(imgui_glad_cube PRIVATE 
+    common_libs
+    glad
+    glfw
+    imgui
+    glm::glm
+    SDL2::SDL2 
+)

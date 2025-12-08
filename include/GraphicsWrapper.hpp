@@ -17,7 +17,6 @@ namespace graphics {
         GLuint figureVAO, figureVBO;
         GLuint framebufferTexture = 0;
         GLuint rbo = 0; // depth/stencil renderbuffer
-        // GLuint shaderProgram;
         
         // --- Viewport ---
         float width, height;
@@ -66,7 +65,7 @@ namespace graphics {
             }
             return shader;
         }
-
+        
         void SetupShader() {
             const char* vertexShaderSrc = R"(
             #version 330 core
@@ -128,11 +127,13 @@ namespace graphics {
             
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
+            
         }
         
-        void SetupFramebuffer(int w, int h) {
-            width = w;
-            height = h;
+        void SetupFramebuffer(ImVec2 size) {
+            width = size.x;
+            height = size.y;
+            
             
             if (framebuffer) {
                 glDeleteFramebuffers(1, &framebuffer);
@@ -146,7 +147,7 @@ namespace graphics {
             // Color texture
             glGenTextures(1, &framebufferTexture);
             glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebufferTexture, 0);
@@ -154,13 +155,14 @@ namespace graphics {
             // Depth/stencil
             glGenRenderbuffers(1, &rbo);
             glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, size.x, size.y);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
             
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cerr << "[ERROR] Framebuffer not complete!" << std::endl;
             
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);  // allow resizing (default)
         }
         
         void RenderScene(float viewportWidth, float viewportHeight) {
@@ -168,41 +170,44 @@ namespace graphics {
             glBindVertexArray(VAO);
             
             glm::mat4 view = glm::lookAt(cameraPos, // camera position
-                             cameraFront, // look at cube
-                             cameraUp); // up vector
-
-            // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportWidth / viewportHeight, 0.1f, 100.0f);
-            glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() ,
-                              glm::vec3(0.5f, 1.0f, 0.0f));
-
+                cameraFront, // look at cube
+                cameraUp); // up vector
+                
+                // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+                glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportWidth / viewportHeight, 0.1f, 100.0f);
+                glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() ,
+                glm::vec3(0.5f, 1.0f, 0.0f));
+                
+                
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+                
+                glUniform3f(glGetUniformLocation(shaderProgram, "color"), 0.0f, 0.7f, 1.0f);
+                
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                
+                glBindVertexArray(0);
+                glUseProgram(0);
+                
+                
+            }
             
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+            void RenderToFramebuffer() {
+                glEnable(GL_DEPTH_TEST);
+                glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+                glViewport(0, 0, (int)width, (int)height);
+                glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                
+                RenderScene(width, height);
+                
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            }
             
-            glUniform3f(glGetUniformLocation(shaderProgram, "color"), 0.0f, 0.7f, 1.0f);
-            
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            
-            glBindVertexArray(0);
-            glUseProgram(0);
-        }
+            float GetWidth() const { return width; }
+            float GetHeight() const { return height; }
+        };
         
-        void RenderToFramebuffer() {
-            glEnable(GL_DEPTH_TEST);
-            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-            glViewport(0, 0, (int)width, (int)height);
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
-            RenderScene(width, height);
-            
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        }
-        
-        float GetWidth() const { return width; }
-        float GetHeight() const { return height; }
-    };
+    } // namespace graphics
     
-} // namespace graphics

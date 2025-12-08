@@ -61,15 +61,15 @@ namespace gui
         bool setupDone = false;
         ImGuiWindowData WMData;
         graphics::GraphicsWrapper *gfx; // Reference to GraphicsWrapper
-
+        
         // Private helper functions for drawing specific windows
         void WelcomeWindow();
         void ConfigurationWindow(bool *page_open);
         void SimulationWindow();
         public:
-
+        
         //constructor
-        ImguiLayer(graphics::GraphicsWrapper graphics);
+        ImguiLayer(graphics::GraphicsWrapper &graphics);
         ImguiLayer(){};
         ~ImguiLayer();
         
@@ -77,7 +77,7 @@ namespace gui
         void clean_up();
         bool ShouldClose();
         void processEvents();
-
+        
         
         // Lifecycle methods
         void beginFrame();
@@ -90,7 +90,9 @@ namespace gui
     // ---------------------------------------------------------
     // Marked inline because they are implemented in a .hpp file
     
-    inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper graphics): gfx(&graphics){}
+    inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper &graphics): gfx(&graphics){
+        sys_logger.debug("ImguiLayer constructor called");
+    }
     
     inline ImguiLayer::~ImguiLayer() {
         if (window) {
@@ -128,7 +130,7 @@ namespace gui
         }
         
         sys_logger.debug("GLFW window created successfully");
-
+        
         glfwMakeContextCurrent(this->window);
         glfwSwapInterval(1); // Enable vsync
         
@@ -138,7 +140,7 @@ namespace gui
             throw std::runtime_error("[ERROR] initialize GLAD");
         }
         
-
+        
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -153,7 +155,7 @@ namespace gui
         ImGui_ImplOpenGL3_Init(glsl_version);
         
         this->setupDone = true;
-
+        
         sys_logger.debug("ImGuiLayer setup completed successfully");
     }
     
@@ -180,7 +182,7 @@ namespace gui
     
     inline void ImguiLayer::beginFrame()
     {
-
+        
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -203,7 +205,7 @@ namespace gui
     {
         // Rendering
         ImGui::Render();
-
+        
         sys_logger.debug("Rendering ImGui frame");
         
         int display_w, display_h;
@@ -214,7 +216,7 @@ namespace gui
         glClear(GL_COLOR_BUFFER_BIT);
         
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+        
         glfwSwapBuffers(window);
     }
     
@@ -474,15 +476,13 @@ namespace gui
                         
                         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
                         
-                        // if (viewportSize.x != Wrapper_gfx.get_width() || 
-                        //     viewportSize.y != Wrapper_gfx.get_height())
-                        // {
-                        //     Wrapper_gfx.SetupFramebuffer(viewportSize);
-                        // }
+                        if (viewportSize.x != gfx->GetWidth() || viewportSize.y != gfx->GetHeight()) {
+                            gfx->SetupFramebuffer(viewportSize);
+                        }
                         
                         // Render the scene into the ImGui child area
                         ImGui::Image((void*)(intptr_t)gfx->GetFramebufferTexture(), viewportSize, ImVec2(0,1), ImVec2(1,0));
-
+                        
                         // Redimensiona framebuffer se o tamanho mudou
                         
                         ImGui::EndChild();
@@ -501,12 +501,12 @@ namespace gui
                 // Bottom Console / Log
             }
             ImGui::EndGroup();
-
+            
             ImGui::TextColored(ImVec4(1,1,0,1), "SYSTEM LOG");
             ImGui::Separator();
-
+            
             ImGui::BeginChild("LogRegion", ImVec2(0, 0), true);
-                    
+            
             //TODO: link to a file from simulation (.simlog)
             // read from logBuffer instead of static text in the future
             static ImGuiTextBuffer logBuffer;

@@ -2,7 +2,6 @@
 
 #include "ImguiLayer.hpp"
 #include "imgui.h"
-#pragma once
 
 #include "ImguiLayer.hpp"
 #include "SimulationWrapper.hpp"
@@ -50,7 +49,7 @@ inline void Application::setup()
     // Setup Graph Layer
     gfx.SetupShader();
     gfx.SetupBuffers();
-    gfx.SetupFramebuffer(400, 300);
+    // gfx.SetupFramebuffer(400, 300);
     
     // Setup Simulation Layer
     
@@ -59,8 +58,9 @@ inline void Application::setup()
 
 inline Application::Application()
 {
-    sys_logger.info("Application constructor");
+    uiLayer = gui::ImguiLayer(gfx);
     this->setup();
+    sys_logger.info("Application constructor");
 }
 
 inline Application::~Application()
