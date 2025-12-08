@@ -11,7 +11,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include "GraphicsWrapper.hpp"
-
+#include "Logger.hpp"
 
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section, void* user_data);
 extern ImGuiDemoMarkerCallback      GImGuiDemoMarkerCallback;
@@ -60,7 +60,7 @@ namespace gui
         GLFWwindow* window = nullptr;
         bool setupDone = false;
         ImGuiWindowData WMData;
-        graphics::GraphicsWrapper &Wrapper_gfx; // Reference to GraphicsWrapper
+        graphics::GraphicsWrapper *gfx; // Reference to GraphicsWrapper
 
         // Private helper functions for drawing specific windows
         void WelcomeWindow();
@@ -69,27 +69,15 @@ namespace gui
         public:
 
         //constructor
-        ImguiLayer(graphics::GraphicsWrapper Wrapper_gfx);
+        ImguiLayer(graphics::GraphicsWrapper graphics);
+        ImguiLayer(){};
         ~ImguiLayer();
         
         void setup();
         void clean_up();
         bool ShouldClose();
         void processEvents();
-        
-        ViewportRequest getRenderProp() {
-            int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
-            ViewportRequest vpReq;
-            
-            vpReq.valid = true;
-            vpReq.x = 0;
-            vpReq.y = 0;
-            vpReq.width = static_cast<float>(width);
-            vpReq.height = static_cast<float>(height);
-            return vpReq;
-            
-        }
+
         
         // Lifecycle methods
         void beginFrame();
@@ -102,8 +90,7 @@ namespace gui
     // ---------------------------------------------------------
     // Marked inline because they are implemented in a .hpp file
     
-    inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper Wrapper_gfx) :
-    Wrapper_gfx(Wrapper_gfx) {}
+    inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper graphics): gfx(&graphics){}
     
     inline ImguiLayer::~ImguiLayer() {
         if (window) {
@@ -115,6 +102,8 @@ namespace gui
     {
         if(!glfwInit()) 
         throw std::runtime_error("[ERROR] initialize GLFW");
+        
+        sys_logger.debug("GLFW initialized successfully");
         
         // Decide GL+GLSL versions
         #if defined(__APPLE__)
@@ -138,6 +127,8 @@ namespace gui
             throw std::runtime_error("[ERROR] create GLFW window");
         }
         
+        sys_logger.debug("GLFW window created successfully");
+
         glfwMakeContextCurrent(this->window);
         glfwSwapInterval(1); // Enable vsync
         
@@ -147,6 +138,7 @@ namespace gui
             throw std::runtime_error("[ERROR] initialize GLAD");
         }
         
+
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -161,6 +153,8 @@ namespace gui
         ImGui_ImplOpenGL3_Init(glsl_version);
         
         this->setupDone = true;
+
+        sys_logger.debug("ImGuiLayer setup completed successfully");
     }
     
     inline void ImguiLayer::clean_up()
@@ -186,6 +180,7 @@ namespace gui
     
     inline void ImguiLayer::beginFrame()
     {
+
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -194,6 +189,7 @@ namespace gui
     
     inline void ImguiLayer::drawUI()
     {
+        sys_logger.debug("Drawing ImGui UI elements");
         if (WMData.ShowWelcomeWindow) 
         this->WelcomeWindow();
         
@@ -201,15 +197,14 @@ namespace gui
         this->ConfigurationWindow(&WMData.ShowConfigurationWindow);
         
         if (WMData.ShowSimulationWindow) this->SimulationWindow();
-        // ImGui::Begin("Simulation Data", &WMData.ShowSimulationWindow);
-        // ImGui::Text("Simulation is running...");
-        // ImGui::End();
     }
     
     inline void ImguiLayer::endFrame()
     {
         // Rendering
         ImGui::Render();
+
+        sys_logger.debug("Rendering ImGui frame");
         
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -219,7 +214,7 @@ namespace gui
         glClear(GL_COLOR_BUFFER_BIT);
         
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        
+
         glfwSwapBuffers(window);
     }
     
@@ -479,14 +474,16 @@ namespace gui
                         
                         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
                         
+                        // if (viewportSize.x != Wrapper_gfx.get_width() || 
+                        //     viewportSize.y != Wrapper_gfx.get_height())
+                        // {
+                        //     Wrapper_gfx.SetupFramebuffer(viewportSize);
+                        // }
+                        
                         // Render the scene into the ImGui child area
-                        // ImGui::Image((void*)(intptr_t)Wrapper_gfx.GetFramebufferTexture(), viewportSize, ImVec2(0,1), ImVec2(1,0));
+                        ImGui::Image((void*)(intptr_t)gfx->GetFramebufferTexture(), viewportSize, ImVec2(0,1), ImVec2(1,0));
 
                         // Redimensiona framebuffer se o tamanho mudou
-                        // if (viewportSize.x != graphicsWrapper.fbWidth || viewportSize.y != graphicsWrapper.fbHeight)
-                        // {
-                        //     graphicsWrapper.SetupFramebuffer((int)viewportSize.x, (int)viewportSize.y);
-                        // }
                         
                         ImGui::EndChild();
                         

@@ -7,11 +7,13 @@
 #include "ImguiLayer.hpp"
 #include "SimulationWrapper.hpp"
 #include "GraphicsWrapper.hpp"
+#include "Logger.hpp"
 
 // imgui.h is included inside ImguiLayer.hpp, but can be included here if needed
 // #include "imgui.h" 
 
-using namespace graphics;
+// using namespace graphics;
+
 
 
 class Application
@@ -20,12 +22,15 @@ class Application
     // Core application
     // UILayer - imgui
     gui::ImguiLayer uiLayer;
+
     
     // Graphics -- for the simulation
-    GraphicsWrapper gfx;
+    graphics::GraphicsWrapper gfx;
 
     // Simulation -- just calc and maths
     SimulationWrapper simWrapper;
+
+    //Debug / Logger
     
     public:
     
@@ -38,20 +43,23 @@ class Application
 // Initialization of many components used
 inline void Application::setup()
 {
+    
     // Setup ImGui Layer
     uiLayer.setup();
     
     // Setup Graph Layer
-    gfx.setup();
-
-
+    gfx.SetupShader();
+    gfx.SetupBuffers();
+    gfx.SetupFramebuffer(400, 300);
+    
     // Setup Simulation Layer
     
 
 }   
 
-inline Application::Application() :gfx(), uiLayer(gfx)
+inline Application::Application()
 {
+    sys_logger.info("Application constructor");
     this->setup();
 }
 
@@ -59,32 +67,43 @@ inline Application::~Application()
 {
 }
 
-inline void Application::run()
+void Application::run()
 {
+    sys_logger.debug("Starting main application loop");
     // Main application loop controlled by Application
-    while (!uiLayer.ShouldClose()) {
+    while (!uiLayer.ShouldClose()) 
+    {
         
         // 1. Poll Inputs
+        sys_logger.debug("Polling events");
         uiLayer.processEvents();
         
+        glEnable(GL_DEPTH_TEST);       // enable depth testing
+        gfx.RenderToFramebuffer();
+
+        
         // 2. Start Frame
+        sys_logger.debug("Starting frame");
         uiLayer.beginFrame();
         
         // 3. Update Simulation Logic (Maths/Physics)
         
         // 4. Render Graphics
         // 4.1 set constants for rendering
-        ViewportRequest vpRequest;
-        vpRequest = uiLayer.getRenderProp();
+        // ViewportRequest vpRequest;
+        // vpRequest = uiLayer.getRenderProp();
         
         // 4.2 render scene
-        gfx.render();
+        // gfx.render();
+        // gfx.RenderScene(800.0f, 600.0f);
+
         
         // 4. Draw UI
         uiLayer.drawUI();
-        
+        sys_logger.info("UI drawn");
         // 5. Render & Swap Buffers
         uiLayer.endFrame();
+        sys_logger.info("Frame ended");
     }
     uiLayer.clean_up();
 }
