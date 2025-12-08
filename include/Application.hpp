@@ -6,9 +6,13 @@
 
 #include "ImguiLayer.hpp"
 #include "SimulationWrapper.hpp"
+#include "GraphicsWrapper.hpp"
 
 // imgui.h is included inside ImguiLayer.hpp, but can be included here if needed
 // #include "imgui.h" 
+
+using namespace graphics;
+
 
 class Application
 {
@@ -18,7 +22,7 @@ class Application
     gui::ImguiLayer uiLayer;
     
     // Graphics -- for the simulation
-    
+    GraphicsWrapper gfx;
 
     // Simulation -- just calc and maths
     SimulationWrapper simWrapper;
@@ -37,14 +41,16 @@ inline void Application::setup()
     // Setup ImGui Layer
     uiLayer.setup();
     
-    // Setup Graphics Layer
-    
+    // Setup Graph Layer
+    gfx.setup();
+
+
     // Setup Simulation Layer
     
 
 }   
 
-inline Application::Application()
+inline Application::Application() :gfx(), uiLayer(gfx)
 {
     this->setup();
 }
@@ -65,7 +71,14 @@ inline void Application::run()
         uiLayer.beginFrame();
         
         // 3. Update Simulation Logic (Maths/Physics)
-        // ... simulation code ...
+        
+        // 4. Render Graphics
+        // 4.1 set constants for rendering
+        ViewportRequest vpRequest;
+        vpRequest = uiLayer.getRenderProp();
+        
+        // 4.2 render scene
+        gfx.render();
         
         // 4. Draw UI
         uiLayer.drawUI();

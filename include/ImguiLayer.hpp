@@ -9,6 +9,8 @@
 #include <stdexcept>
 #include <cstdio>
 #include <iostream>
+#include <glm/glm.hpp>
+#include "GraphicsWrapper.hpp"
 
 
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section, void* user_data);
@@ -54,37 +56,55 @@ namespace gui
     
     class ImguiLayer
     {
-    private:
+        private:
         GLFWwindow* window = nullptr;
         bool setupDone = false;
         ImGuiWindowData WMData;
-        
+        graphics::GraphicsWrapper &Wrapper_gfx; // Reference to GraphicsWrapper
+
         // Private helper functions for drawing specific windows
         void WelcomeWindow();
         void ConfigurationWindow(bool *page_open);
         void SimulationWindow();
-    public:
-        ImguiLayer();
-        ~ImguiLayer();
+        public:
 
+        //constructor
+        ImguiLayer(graphics::GraphicsWrapper Wrapper_gfx);
+        ~ImguiLayer();
+        
         void setup();
         void clean_up();
         bool ShouldClose();
         void processEvents();
+        
+        ViewportRequest getRenderProp() {
+            int width, height;
+            glfwGetFramebufferSize(window, &width, &height);
+            ViewportRequest vpReq;
+            
+            vpReq.valid = true;
+            vpReq.x = 0;
+            vpReq.y = 0;
+            vpReq.width = static_cast<float>(width);
+            vpReq.height = static_cast<float>(height);
+            return vpReq;
+            
+        }
         
         // Lifecycle methods
         void beginFrame();
         void drawUI(); // Just submits widgets, does not Render/Swap
         void endFrame();
     };
-
+    
     // ---------------------------------------------------------
     // ImguiLayer Implementation
     // ---------------------------------------------------------
     // Marked inline because they are implemented in a .hpp file
-
-    inline ImguiLayer::ImguiLayer() {}
-
+    
+    inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper Wrapper_gfx) :
+    Wrapper_gfx(Wrapper_gfx) {}
+    
     inline ImguiLayer::~ImguiLayer() {
         if (window) {
             clean_up();
@@ -94,23 +114,23 @@ namespace gui
     inline void ImguiLayer::setup()
     {
         if(!glfwInit()) 
-            throw std::runtime_error("[ERROR] initialize GLFW");
+        throw std::runtime_error("[ERROR] initialize GLFW");
         
         // Decide GL+GLSL versions
-    #if defined(__APPLE__)
+        #if defined(__APPLE__)
         // GL 3.2 + GLSL 150
         const char* glsl_version = "#version 150";
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-    #else
+        #else
         // GL 3.0 + GLSL 130
         const char* glsl_version = "#version 130";
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    #endif
-
+        #endif
+        
         this->window = glfwCreateWindow(WIDTH, HEIGHT, VIEW_TITLE, nullptr, nullptr);
         
         if (!this->window) {
@@ -132,7 +152,7 @@ namespace gui
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-
+        
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
         
@@ -154,16 +174,16 @@ namespace gui
             setupDone = false;
         }
     }
-
+    
     inline bool ImguiLayer::ShouldClose() {
         return glfwWindowShouldClose(window);
     }
-
+    
     inline void ImguiLayer::processEvents()
     {
         glfwPollEvents();
     }
-
+    
     inline void ImguiLayer::beginFrame()
     {
         // Start the Dear ImGui frame
@@ -171,21 +191,21 @@ namespace gui
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
-
+    
     inline void ImguiLayer::drawUI()
     {
         if (WMData.ShowWelcomeWindow) 
-            this->WelcomeWindow();
+        this->WelcomeWindow();
         
         if (WMData.ShowConfigurationWindow) 
-            this->ConfigurationWindow(&WMData.ShowConfigurationWindow);
-            
+        this->ConfigurationWindow(&WMData.ShowConfigurationWindow);
+        
         if (WMData.ShowSimulationWindow) this->SimulationWindow();
-            // ImGui::Begin("Simulation Data", &WMData.ShowSimulationWindow);
-            // ImGui::Text("Simulation is running...");
-            // ImGui::End();
+        // ImGui::Begin("Simulation Data", &WMData.ShowSimulationWindow);
+        // ImGui::Text("Simulation is running...");
+        // ImGui::End();
     }
-
+    
     inline void ImguiLayer::endFrame()
     {
         // Rendering
@@ -202,7 +222,7 @@ namespace gui
         
         glfwSwapBuffers(window);
     }
-
+    
     inline void ImguiLayer::WelcomeWindow()
     {
         static Options selectedOption = SIMPLE_SIMULATION;
@@ -227,23 +247,23 @@ namespace gui
                 switch (selectedOption)
                 {
                     case SOLAR_SIMULATION:
-                        WMData.ImportSimData_example = true;
-                        WMData.ShowSimulationWindow = true;
-
-                        break;
+                    WMData.ImportSimData_example = true;
+                    WMData.ShowSimulationWindow = true;
+                    
+                    break;
                     case SIMPLE_SIMULATION:
-
-                        WMData.ShowSimulationWindow = true;
-                        WMData.ShowWelcomeWindow = false;
-                        break;
+                    
+                    WMData.ShowSimulationWindow = true;
+                    WMData.ShowWelcomeWindow = false;
+                    break;
                     case REAL_TIME_SIMULATION:
-                        WMData.ImportSimData_gpredict = true;
-                        WMData.ShowSimulationWindow = true;
-                        WMData.ShowWelcomeWindow = false;
-                        break;
+                    WMData.ImportSimData_gpredict = true;
+                    WMData.ShowSimulationWindow = true;
+                    WMData.ShowWelcomeWindow = false;
+                    break;
                     case CONFIGURE_SETTINGS:
-                        WMData.ShowConfigurationWindow = true;
-                        break;
+                    WMData.ShowConfigurationWindow = true;
+                    break;
                     default: break;
                 }
             }
@@ -276,7 +296,7 @@ namespace gui
                     char label[128];
                     sprintf(label, "MyObject %d", i);
                     if (ImGui::Selectable(label, selected == i, ImGuiSelectableFlags_SelectOnNav))
-                        selected = i;
+                    selected = i;
                 }
                 ImGui::EndChild();
             }
@@ -312,10 +332,10 @@ namespace gui
         }
         ImGui::End();
     }
-
+    
     inline void ImguiLayer::SimulationWindow()
     {
-
+        
         //2. Control Panel Variables
         static float timeScale = 1.0f;
         static bool isPaused = true;
@@ -323,13 +343,13 @@ namespace gui
         static float gravity[3] = { 0.0f, -9.81f, 0.0f };
         static bool showGrid = true;
         
-
+        
         // 3. Planet Management Variables
         const char* items[] = { "", "Earth", "Mars", "Pluto", "Sun" };
         static int item = 0;
         static float planet_parameters[3] = { 1.0f, 2.0f, 3.0f }; // radius, mass, velocity
         
-
+        
         // ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);
         // Get the viewport of the main window (the OS window)
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -337,8 +357,8 @@ namespace gui
         // Force the ImGui window to cover the whole viewport
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
-
-
+        
+        
         
         // Main Window with Menu Bar
         if (ImGui::Begin("Simulation Dashboard", &WMData.ShowSimulationWindow, ImGuiWindowFlags_MenuBar))
@@ -354,11 +374,11 @@ namespace gui
                     if (ImGui::MenuItem("Close")) { 
                         WMData.ShowSimulationWindow = false; 
                         WMData.ShowWelcomeWindow = true; //reopens welcome
-
+                        
                     }
                     ImGui::EndMenu();
                 }
-
+                
                 if (ImGui::BeginMenu("View"))
                 {
                     ImGui::MenuItem("Show Grid", "", &showGrid);
@@ -366,7 +386,7 @@ namespace gui
                 }
                 ImGui::EndMenuBar();
             }
-
+            
             // 2. Left Sidebar (Controls)
             // -------------------------------------------------
             ImGui::BeginChild("Controls", ImVec2(250, -150), true);
@@ -374,7 +394,7 @@ namespace gui
                 ImGui::TextColored(ImVec4(1,1,0,1), "CONTROL PANEL");
                 ImGui::Separator();
                 ImGui::Spacing();
-
+                
                 // Playback controls
                 if (ImGui::Button(isPaused ? "PLAY" : "PAUSE", ImVec2(80, 30))) {
                     isPaused = !isPaused;
@@ -384,16 +404,16 @@ namespace gui
                     timeScale = 1.0f;
                     isPaused = true;
                 }
-
+                
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Text("Physics Parameters");
-
+                
                 // Sliders
                 ImGui::DragFloat("Time Scale", &timeScale, 0.1f, 0.0f, 5.0f);
                 ImGui::SliderInt("Iterations", &iterations, 1, 1000);
                 ImGui::InputFloat3("Gravity", gravity);
-
+                
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Text("System Status");
@@ -405,26 +425,26 @@ namespace gui
                 else          ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: RUNNING");
             }
             ImGui::EndChild();
-
+            
             // 3. Left Sidebar(Planets management)
             ImGui::BeginChild("Controls", ImVec2(250, -150), true);
             {
                 ImGui::Separator();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Planet Manager");
                 ImGui::Spacing();
-
+                
                 // Playback controls
                 ImGui::Combo("Object", &item, items, IM_ARRAYSIZE(items)); //ImGui::SameLine();
                 ImGui::SliderFloat("Radius", &planet_parameters[0], 0.0f, 5.0f); //ImGui::SameLine();
                 ImGui::SliderFloat("Mass", &planet_parameters[1], 0.0f, 5.0f); //ImGui::SameLine();
                 ImGui::SliderFloat("Velocity", &planet_parameters[2], 0.0f, 5.0f);
                 ImGui::Spacing();
-
+                
                 // ImGui::SameLine();
                 if (ImGui::Button("SAVE / SET", ImVec2(80, 30))) {
                     //send values to simulation (TODO)
                 }
-
+                
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Text("System Status");
@@ -433,14 +453,14 @@ namespace gui
                 ImGui::Text("Object: %s", item == -1 ? "" : items[item]);
                 ImGui::Text("Velocity(m/s): %.1f", 40.0f);
                 ImGui::Text("Acceleration(m/s²): %.1f", 100.0f);
-
+                
                 // if (isPaused) ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: PAUSED");
                 // else          ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: RUNNING");
             }
             ImGui::EndChild();
-
-
-
+            
+            
+            
             //Simulation Window Layout Separation
             // 3. Right Viewport (Visualization)
             ImGui::SameLine(); // Puts the next child to the right of the previous one
@@ -452,17 +472,22 @@ namespace gui
                 {
                     if (ImGui::BeginTabItem("3D Viewport"))
                     {
-
+                        
                         // EXAMPLE 3D VIEWPORT AREA                        
                         ImGui::BeginChild("ViewportRegion", ImVec2(0, -150), true, ImGuiWindowFlags_NoScrollbar);
                         ImGui::Text("Simulation rendering goes here...");
                         
-                        if (showGrid) {
-                            ImDrawList* draw_list = ImGui::GetWindowDrawList();
-                            ImVec2 p = ImGui::GetCursorScreenPos();
-                            draw_list->AddRect(p, ImVec2(p.x + 500, p.y + 300), IM_COL32(100, 100, 100, 255));
-                            draw_list->AddLine(p, ImVec2(p.x + 500, p.y + 300), IM_COL32(255, 0, 0, 255));
-                        }
+                        ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+                        
+                        // Render the scene into the ImGui child area
+                        // ImGui::Image((void*)(intptr_t)Wrapper_gfx.GetFramebufferTexture(), viewportSize, ImVec2(0,1), ImVec2(1,0));
+
+                        // Redimensiona framebuffer se o tamanho mudou
+                        // if (viewportSize.x != graphicsWrapper.fbWidth || viewportSize.y != graphicsWrapper.fbHeight)
+                        // {
+                        //     graphicsWrapper.SetupFramebuffer((int)viewportSize.x, (int)viewportSize.y);
+                        // }
+                        
                         ImGui::EndChild();
                         
                         ImGui::EndTabItem();
@@ -479,12 +504,12 @@ namespace gui
                 // Bottom Console / Log
             }
             ImGui::EndGroup();
+
+            ImGui::TextColored(ImVec4(1,1,0,1), "SYSTEM LOG");
             ImGui::Separator();
+
             ImGui::BeginChild("LogRegion", ImVec2(0, 0), true);
-            
-            ImGui::TextColored(ImVec4(1.0f,1.0f,0.0f,1.0f), "SYSTEM LOG");
-            ImGui::Separator();
-            
+                    
             //TODO: link to a file from simulation (.simlog)
             // read from logBuffer instead of static text in the future
             static ImGuiTextBuffer logBuffer;
@@ -493,7 +518,7 @@ namespace gui
                 ImGui::TextColored(ImVec4(0.5f,0.5f,0.5f,1.0f), "[10:00:05] Loaded assets.");
             }
             if (!isPaused) 
-                ImGui::Text("[INFO] Calculating step...");
+            ImGui::Text("[INFO] Calculating step...");
             ImGui::EndChild();
         }
         ImGui::End();
