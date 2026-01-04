@@ -4,6 +4,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
+#include "PlanetProperties.hpp"
+#include "Planet.hpp"
+#include "imgui.h"
+#include "Logger.hpp"
 
 namespace graphics {
     
@@ -22,9 +26,11 @@ namespace graphics {
         float width, height;
         
         // --- Camera Properties ---
-        glm::vec3 cameraPos   = {0.0f, 0.0f, 5.0f};
-        glm::vec3 cameraFront = {0.0f, 0.0f, 0.0f};
-        glm::vec3 cameraUp    = {0.0f, 1.0f, 0.0f};
+        glm::vec3 cameraPos   = {0.0f, 0.0f, 0.0f};
+        glm::vec3 cameraFront = {10.0f, 0.0f, 0.0f};
+        glm::vec3 cameraUp    = {5.0f, 5.0f, 0.0f};
+        
+        
         
         // --- Cube vertices ---
         inline static float vertices[108] = {
@@ -37,6 +43,22 @@ namespace graphics {
         };
         
         public:
+        
+        void set_cameraPos(glm::vec3 pos)   { cameraPos = pos; }
+        void set_cameraFront(glm::vec3 pos) { cameraFront = pos; }
+        void set_cameraUp(glm::vec3 pos)    { cameraUp = pos; }
+        
+        
+        void set_cameraPos(float x, float y,float z)   { cameraPos   = {x,y,z}; }
+        void set_cameraFront(float x, float y,float z) { cameraFront = {x,y,z}; }
+        void set_cameraUp(float x, float y,float z)    { cameraUp    = {x,y,z}; }
+        
+        
+        glm::vec3 get_cameraPos()     const { return cameraPos; }
+        glm::vec3 get_cameraFront()   const { return cameraFront; }
+        glm::vec3 get_cameraUp()      const { return cameraUp; }
+        
+        
         void createVAO()
         {
             glGenVertexArrays(1, &VAO);
@@ -102,6 +124,7 @@ namespace graphics {
         : width(w), height(h) {}
         
         ~GraphicsWrapper() {
+            
             glDeleteProgram(shaderProgram);
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
@@ -165,49 +188,186 @@ namespace graphics {
             glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);  // allow resizing (default)
         }
         
-        void RenderScene(float viewportWidth, float viewportHeight) {
-            glUseProgram(shaderProgram);
-            glBindVertexArray(VAO);
-            
-            glm::mat4 view = glm::lookAt(cameraPos, // camera position
-                cameraFront, // look at cube
-                cameraUp); // up vector
+        
+        void RenderPlanets(const std::vector<PlanetProperties> planets,
+            float viewportWidth,
+            float viewportHeight)
+            {
+                glEnable(GL_DEPTH_TEST);
+                glUseProgram(shaderProgram);
+                glBindVertexArray(VAO);
                 
-                // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-                glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportWidth / viewportHeight, 0.1f, 100.0f);
-                glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() ,
-                glm::vec3(0.5f, 1.0f, 0.0f));
+                glm::mat4 view = glm::lookAt(
+                    cameraPos,
+                    cameraPos + cameraFront, 
+                    cameraUp
+                );
+                
+                sys_logger.debug("Camera Position: (" + std::to_string(cameraPos.x) + ", " +
+                std::to_string(cameraPos.y) + ", " +
+                std::to_string(cameraPos.z) + ")");
                 
                 
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+                glm::mat4 projection = glm::perspective(
+                    glm::radians(45.0f),
+                    viewportWidth / viewportHeight,
+                    0.1f,
+                    100.0f
+                );
                 
-                glUniform3f(glGetUniformLocation(shaderProgram, "color"), 0.0f, 0.7f, 1.0f);
                 
-                glDrawArrays(GL_TRIANGLES, 0, 36);
+                
+                
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"view"),
+                1, GL_FALSE, &view[0][0]);
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"projection"),
+                1, GL_FALSE, &projection[0][0]);
+                
+                for (const auto& p : planets) {
+                    
+                    sys_logger.debug("Rendering Planet at Position: (" + 
+                        std::to_string(p.get_position().x) + ", " +
+                        std::to_string(p.get_position().y) + ", " +
+                        std::to_string(p.get_position().z) + ")"
+                    );
+                    
+                    glm::mat4 model = glm::translate(glm::mat4(1.0f), p.get_position());
+                    model = glm::scale(model, glm::vec3(p.get_radius()));
+                    
+                    glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"model"),
+                    1, GL_FALSE, &model[0][0]);
+                    
+                    glUniform3f(glGetUniformLocation(shaderProgram,"color"),
+                    0.2f, 0.6f, 1.0f);
+                    
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                }
                 
                 glBindVertexArray(0);
                 glUseProgram(0);
-                
-                
             }
             
-            void RenderToFramebuffer() {
-                glEnable(GL_DEPTH_TEST);
+            void RenderToFramebuffer(const std::vector<PlanetProperties>& planets)
+            {
+                if (framebuffer == 0) {
+                    std::cerr << "Framebuffer not initialized\n";
+                    return;
+                }
+                
+                sys_logger.debug("RenderToFramebuffer called");
+                
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
                 glViewport(0, 0, (int)width, (int)height);
                 glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 
-                RenderScene(width, height);
+                RenderPlanets(planets, width, height);
+                // RenderScene(width, height);
                 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
             
-            float GetWidth() const { return width; }
-            float GetHeight() const { return height; }
-        };
+            
+            
+            
+            // DEMO FUNCTION -- TEST PURPOSES
+            void RenderScene(float viewportWidth, float viewportHeight) {
+                glUseProgram(shaderProgram);
+                glBindVertexArray(VAO);
+                
+                glm::mat4 view = glm::lookAt(cameraPos, // camera position
+                    cameraFront, // look at cube
+                    cameraUp); // up vector
+                    
+                    // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+                    glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportWidth / viewportHeight, 0.1f, 100.0f);
+                    glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() ,
+                    glm::vec3(0.5f, 1.0f, 0.0f));
+                    
+                    
+                    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+                    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+                    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+                    
+                    glUniform3f(glGetUniformLocation(shaderProgram, "color"), 0.0f, 0.7f, 1.0f);
+                    
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                    
+                    glBindVertexArray(0);
+                    glUseProgram(0);
+                    
+                    
+                }
+                
+                
+                
+                // void RenderScene(const std::vector<PlanetProperties>& planets,
+                //     float viewportWidth,
+                //     float viewportHeight)
+                //     {
+                //         glEnable(GL_DEPTH_TEST);
+                //         glUseProgram(shaderProgram);
+                //         glBindVertexArray(VAO);
+                
+                //         glm::mat4 view = glm::lookAt(
+                //             cameraPos,
+                //             glm::vec3(0,0,0),
+                //             cameraUp
+                //         );
+                
+                //         glm::mat4 projection = glm::perspective(
+                //             glm::radians(45.0f),
+                //             viewportWidth / viewportHeight,
+                //             0.1f,
+                //             100.0f
+                //         );
+                
+                //         glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"view"),
+                //         1, GL_FALSE, &view[0][0]);
+                //         glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"projection"),
+                //         1, GL_FALSE, &projection[0][0]);
+                
+                //         for (const PlanetProperties& p : planets) {
+                //             glm::mat4 model = glm::mat4(1.0f);
+                //             model = glm::translate(model, p.get_position());
+                //             model = glm::scale(model, glm::vec3(p.get_radius()));
+                
+                //             glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"model"),
+                //             1, GL_FALSE, &model[0][0]);
+                
+                //             glUniform3fv(glGetUniformLocation(shaderProgram,"color"),
+                //             1, &glm::vec3(0.2f, 0.6f, 1.0f)[0]);
+                
+                //             glDrawArrays(GL_TRIANGLES, 0, 36);
+                //         }
+                
+                //         glBindVertexArray(0);
+                //         glUseProgram(0);
+                //     }
+                
+                //     void RenderToFramebuffer(const std::vector<PlanetProperties>& planets) {
+                //         sys_logger.debug("RenderToFramebuffer called");
+                
+                //         std::cout <<"Size of planets: " << planets.size() << std::endl;
+                
+                //         for(const auto& p : planets) {
+                //             sys_logger.debug("Planet Position: (" + std::to_string(p.get_position().x) + ", " +
+                //             std::to_string(p.get_position().y) + ", " +
+                //             std::to_string(p.get_position().z) + ")");
+                //         }
+                
+                //         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+                //         glViewport(0, 0, (int)width, (int)height);
+                //         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                
+                //         RenderScene(planets, width, height);
+                
+                //         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                //     }
+                
+                float GetWidth() const { return width; }
+                float GetHeight() const { return height; }
+            };
+            
+        } // namespace graphics
         
-    } // namespace graphics
-    

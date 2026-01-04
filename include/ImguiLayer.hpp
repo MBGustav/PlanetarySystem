@@ -11,6 +11,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include "GraphicsWrapper.hpp"
+#include "SimulationWrapper.hpp"
 #include "Logger.hpp"
 
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section, void* user_data);
@@ -32,10 +33,10 @@ namespace gui
     
     // Persistent Data for Window Managing
     struct ImGuiWindowData {
-        bool ShowWelcomeWindow = true;
+        bool ShowWelcomeWindow       = false; //TODO: set to true to show at start
         bool ShowConfigurationWindow = false;
-        bool ShowSimulationWindow = false;
-        bool ShowAppFullscreen = false;
+        bool ShowSimulationWindow    = true;
+        bool ShowAppFullscreen       = false;
         
         // About Data import for simulation
         bool ImportSimData_example  = false;
@@ -61,7 +62,7 @@ namespace gui
         bool setupDone = false;
         ImGuiWindowData WMData;
         graphics::GraphicsWrapper *gfx; // Reference to GraphicsWrapper
-        
+        SimulationWrapper *simulation;// reference to simulation
         // Private helper functions for drawing specific windows
         void WelcomeWindow();
         void ConfigurationWindow(bool *page_open);
@@ -69,7 +70,7 @@ namespace gui
         public:
         
         //constructor
-        ImguiLayer(graphics::GraphicsWrapper &graphics);
+        ImguiLayer(graphics::GraphicsWrapper &graphics, SimulationWrapper &simulation);
         ImguiLayer(){};
         ~ImguiLayer();
         
@@ -90,7 +91,8 @@ namespace gui
     // ---------------------------------------------------------
     // Marked inline because they are implemented in a .hpp file
     
-    inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper &graphics): gfx(&graphics){
+    inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper &graphics, SimulationWrapper &simulation): 
+            simulation(&simulation), gfx(&graphics){
         sys_logger.debug("ImguiLayer constructor called");
     }
     
@@ -338,6 +340,10 @@ namespace gui
         static bool isPaused = true;
         static int iterations = 100;
         static float gravity[3] = { 0.0f, -9.81f, 0.0f };
+        static float camPos[3]   = { 0.0f, 0.0f, 0.0f };
+        static float camFront[3] = { 0.0f, 0.0f, 0.0f };
+        static float camUp[3]    = { 0.0f, 0.0f, 0.0f };
+
         static bool showGrid = true;
         
         
@@ -345,8 +351,13 @@ namespace gui
         const char* items[] = { "", "Earth", "Mars", "Pluto", "Sun" };
         static int item = 0;
         static float planet_parameters[3] = { 1.0f, 2.0f, 3.0f }; // radius, mass, velocity
-        
-        
+
+        gfx->set_cameraPos(camPos[0], camPos[1], camPos[2]);
+        gfx->set_cameraFront(camFront[0], camFront[1], camFront[2]);
+        gfx->set_cameraUp(camUp[0], camUp[1], camUp[2]);
+
+
+
         // ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);
         // Get the viewport of the main window (the OS window)
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -406,11 +417,23 @@ namespace gui
                 ImGui::Separator();
                 ImGui::Text("Physics Parameters");
                 
-                // Sliders
+                // --------- Sliders - Physiscs Params -----------
                 ImGui::DragFloat("Time Scale", &timeScale, 0.1f, 0.0f, 5.0f);
                 ImGui::SliderInt("Iterations", &iterations, 1, 1000);
                 ImGui::InputFloat3("Gravity", gravity);
                 
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Text("Camera Controller");
+
+                ImGui::InputFloat3("Position", camPos);
+                ImGui::InputFloat3("Front", camFront);
+                ImGui::InputFloat3("Up", camUp);
+                
+
+
+
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Text("System Status");

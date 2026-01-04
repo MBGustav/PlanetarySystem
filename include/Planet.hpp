@@ -1,10 +1,10 @@
-
+#pragma once
 
 #include <glm/glm.hpp>
 #include <string>
 
+// TODO: add templated format ie. float, double, int ...
 
-// static float G_CONSTANT = 6.67430e-11; // in m^3 kg^-1 s^-2
 static float G_CONSTANT = 6.673e-2;
 class Planet
 {
@@ -14,27 +14,30 @@ private:
     glm::vec3 velocity;
     glm::vec3 acceleration;
     glm::vec3 force;
-
+    glm::vec3 color;
 
     float mass;
     float radius;
     
 public:
-    Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass);
+    Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color);
 
     
     glm::vec3 get_position()     const { return position; }
     glm::vec3 get_velocity()     const { return velocity; }
     glm::vec3 get_acceleration() const { return acceleration; }
+    glm::vec3 get_color()        const { return color; }
     glm::vec3 get_force()        const { return force; }
-    float get_mass()             const { return mass; }
-    float get_radius()           const { return radius; }
-
+    float     get_mass()         const { return mass; }
+    float     get_radius()       const { return radius; }
 
     void set_position(glm::vec3 position)           { this->position = position; }
     void set_velocity(glm::vec3 velocity)           { this->velocity = velocity; }
     void set_acceleration(glm::vec3 acceleration)   { this->acceleration = acceleration; }
     void set_force(glm::vec3 force)                 { this->force = force; }
+    void set_color(glm::vec3 color)                 { this->color = color; }
+    void set_mass(float mass)                       { this->mass = mass; }
+    void set_radius(float radius)                   { this->radius = radius; }
 
     void update(float dt);
     
@@ -50,8 +53,8 @@ public:
     ~Planet();
 };
 
-Planet::Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass):
-    position(position), velocity(velocity), acceleration(acceleration), 
+Planet::Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color):
+    position(position), velocity(velocity), acceleration(acceleration), color(color),
     mass(mass), radius(radius) {}
 
 void Planet::update(float dt) {

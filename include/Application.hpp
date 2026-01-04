@@ -51,14 +51,33 @@ inline void Application::setup()
     gfx.SetupBuffers();
     // gfx.SetupFramebuffer(400, 300);
     
-    // Setup Simulation Layer
+    // Simulation Windows must comunicate with layer
     
+    // Create some default planets for testing
+    PlanetProperties earthProps;
+    earthProps.set_position({0.0f, 0.0f, 0.0f});
+    earthProps.set_velocity({0.0f, 0.0f, 0.0f});
+    earthProps.set_radius(1.0f);
+    earthProps.set_mass(10.0f);
+    earthProps.set_color({5.0f, 0.0f, 0.0f});
 
+    PlanetProperties marsProps;
+    marsProps.set_position({0.5f, 0.5f, 0.5f});
+    marsProps.set_velocity({0.0f, 0.00f, 0.0f});
+    marsProps.set_radius(0.3f);
+    marsProps.set_mass(5.0f);
+    marsProps.set_color({1.0f, 0.0f, 3.0f});
+
+
+    simWrapper.addPlanet(earthProps);
+    // simWrapper.addPlanet(marsProps);
+
+    sys_logger.debug("Total planets in simulation: " + std::to_string(simWrapper.getPlanetCount()));
 }   
 
 inline Application::Application()
 {
-    uiLayer = gui::ImguiLayer(gfx);
+    uiLayer = gui::ImguiLayer(gfx, simWrapper);
     this->setup();
     sys_logger.info("Application constructor");
 }
@@ -70,7 +89,6 @@ inline Application::~Application()
 void Application::run()
 {
     sys_logger.debug("Starting main application loop");
-    // Main application loop controlled by Application
     while (!uiLayer.ShouldClose()) 
     {
         
@@ -79,7 +97,9 @@ void Application::run()
         uiLayer.processEvents();
         
         glEnable(GL_DEPTH_TEST);       // enable depth testing
-        gfx.RenderToFramebuffer();
+        
+        sys_logger.debug("Rendering Framebuffer");
+        gfx.RenderToFramebuffer(simWrapper.getPlanets());
 
         
         // 2. Start Frame

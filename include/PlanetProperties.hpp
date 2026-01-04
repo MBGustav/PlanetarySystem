@@ -14,7 +14,6 @@ class PlanetProperties : public Planet
 {
 private:
     // Planet attributes -- color
-    glm::vec3 color;
     std::string name;
 
     
@@ -25,21 +24,24 @@ public:
     PlanetProperties(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, 
                      float radius, float mass, const glm::vec3 color, const std::string& name);
 
-    glm::vec3 get_color() const { return color; }
+    // glm::vec3 get_color() const { return color; }
     std::string get_name() const { return name; }
 
-    // void draw(Camera& camera, GLuint shaderProgram, GLuint VAO);
+    Planet toPlanet() const {
+        return Planet(get_position(), get_velocity(), get_acceleration(), get_radius(), get_mass(), glm::vec3(1.0f));
+    }
+    
     ~PlanetProperties();
 };
 
 
 PlanetProperties::PlanetProperties(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration,
                                  float radius, float mass, const glm::vec3 color, const std::string& name):
-    Planet(position, velocity, acceleration, radius, mass), color(color), name(name) {}
+    Planet(position, velocity, acceleration, radius, mass, color), name(name) {}
 
 
 PlanetProperties::PlanetProperties()
-    : Planet(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 1.0f), color(glm::vec3(1.0f)), name("Unnamed") {}
+    : Planet(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 1.0f, glm::vec3(1.0f)), name("Unnamed") {}
 PlanetProperties::~PlanetProperties()
 {
 }

@@ -23,11 +23,13 @@ class SimulationWrapper
     SimulationWrapper();
     ~SimulationWrapper();
     
-    
     void calculateIteration(float deltatime);
     bool addPlanet(const PlanetProperties& planet);
     size_t getPlanetCount() const;
     const std::vector<PlanetProperties>& getPlanets() const;
+    const std::vector<PlanetProperties>& getcopyPlanets() const;
+    const vector<Planet>& getRawPlanets() const;
+    const std::vector<PlanetProperties>& getPlanetProperties() const { return planets; }
     
 };
 
@@ -69,6 +71,22 @@ const vector<PlanetProperties>& SimulationWrapper::getPlanets() const {
     return planets;
 }
 
+const vector<PlanetProperties>& SimulationWrapper::getcopyPlanets() const {
+    std::vector<PlanetProperties> copy_planets;
+    for(auto p : planets) {
+        copy_planets.push_back(p);
+    }
+    return copy_planets;
+}
+
+// Conversion to raw vector for graphics rendering
+const vector<Planet>& SimulationWrapper::getRawPlanets() const {
+    vector<Planet> raw_planets;
+    for(auto p : planets) {
+        raw_planets.push_back(p.toPlanet());
+    }
+    return raw_planets;
+}
 void SimulationWrapper::calculateIteration(float deltatime) {
     // TO-DO: implement the simulation step calculations
     size_t i, j;
