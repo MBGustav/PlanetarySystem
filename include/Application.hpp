@@ -54,23 +54,58 @@ inline void Application::setup()
     // Simulation Windows must comunicate with layer
     
     // Create some default planets for testing
+    
+    PlanetProperties sunProps;
+    float sunMass = 1000.0f;
+    sunProps.set_position({0.0f, 0.0f, 0.0f});
+    sunProps.set_velocity({0.0f, 0.0f, 0.0f});
+    sunProps.set_radius(1.5f);
+    sunProps.set_mass(sunMass);
+    sunProps.set_color({255.0f, 255.0f, 255.0f});
+    sunProps.set_name("Sun");
+    sunProps.set_fixed(true); // Sun is fixed in space
+
+
+    
+    float orbit_radius = 5.0f;
+    float orbit_speed = sqrt((G_CONSTANT * sunMass) / orbit_radius ); // simplified orbital speed formula
+
+
     PlanetProperties earthProps;
-    earthProps.set_position({0.0f, 0.0f, 0.0f});
-    earthProps.set_velocity({0.0f, 0.0f, 0.0f});
-    earthProps.set_radius(1.0f);
-    earthProps.set_mass(10.0f);
-    earthProps.set_color({5.0f, 0.0f, 0.0f});
+    earthProps.set_position({ 0.0f, orbit_radius, 0.0f});
+    earthProps.set_velocity({0.0, 0.0, orbit_speed});
+    earthProps.set_radius(0.5f);
+    earthProps.set_mass(1.0f);
+    earthProps.set_name("Earth");
+    
+    orbit_radius = 15.0f;
+    orbit_speed = sqrt((G_CONSTANT * sunMass) / orbit_radius ); // simplified orbital speed formula
 
     PlanetProperties marsProps;
-    marsProps.set_position({0.5f, 0.5f, 0.5f});
-    marsProps.set_velocity({0.0f, 0.00f, 0.0f});
+    marsProps.set_position({0.0f, orbit_radius, 0.0f});
+    marsProps.set_velocity({0.0f, 0.00f, orbit_speed});
     marsProps.set_radius(0.3f);
-    marsProps.set_mass(5.0f);
+    marsProps.set_mass(1.0f);
     marsProps.set_color({1.0f, 0.0f, 3.0f});
+    marsProps.set_name("Mars");
+
+    orbit_radius = 20.0f;
+    orbit_speed = sqrt((G_CONSTANT * sunMass) / orbit_radius ); // simplified orbital speed formula
 
 
+    // PlanetProperties JupyterProps;
+    // JupyterProps.set_position({0.5f, orbit_radius, 0.0f});
+    // JupyterProps.set_velocity({0.0f, 0.00f, orbit_speed});
+    // JupyterProps.set_radius(0.3f);
+    // JupyterProps.set_mass(5.0f);
+    // JupyterProps.set_color({20.0f, 0.0f, 3.0f});
+    // JupyterProps.set_name("Jupiter");
+
+
+    // simWrapper.addPlanet(JupyterProps);
+    simWrapper.addPlanet(sunProps);
     simWrapper.addPlanet(earthProps);
-    // simWrapper.addPlanet(marsProps);
+    simWrapper.addPlanet(marsProps);
 
     sys_logger.debug("Total planets in simulation: " + std::to_string(simWrapper.getPlanetCount()));
 }   

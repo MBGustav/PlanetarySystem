@@ -108,8 +108,8 @@ void apply_newton_law(vector<PlanetProperties> &planets)
 
             B = &planets[j];
             Force = A->apply_newton_law(*B);
-            A->accumulateForce(-Force);
-            B->accumulateForce(+Force);
+            A->accumulateForce(+Force);
+            B->accumulateForce(-Force);
 
         }
     }
@@ -168,13 +168,19 @@ int main() {
                         glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
                         "P1");
     
-    PlanetProperties p2(glm::vec3(0.5f, 0.0f, 0.0f),
+    PlanetProperties p2(glm::vec3(5.0f, 0.0f, 0.0f),
                         glm::vec3(0,0,0),
                         glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
                         "P2");
 
+    PlanetProperties p3(glm::vec3(1.0f, 3.0f, 0.0f),
+                        glm::vec3(0,0,0),
+                        glm::vec3(0,0,0), 1.0f, 10.0f, glm::vec3(0,0,0),
+                        "P");
+
     planets.push_back(p1);
     planets.push_back(p2);
+    planets.push_back(p3);
 
     // === Main loop ===
     while (!glfwWindowShouldClose(window)) {
@@ -203,7 +209,7 @@ int main() {
 
 
         // Draw both "planets"
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < planets.size(); i++) {
             glm::mat4 model = glm::translate(glm::mat4(1.0f), planets[i].get_position());
             model = glm::scale(model, glm::vec3(0.5f));
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);

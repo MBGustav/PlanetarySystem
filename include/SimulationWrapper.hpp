@@ -16,14 +16,16 @@ class SimulationWrapper
     private:
     
     std::vector<PlanetProperties> planets;
-    
-    
+    float delta_time;
+    bool bound_check(size_t index){
+        return index < planets.size() && index >= 0;
+    }
     
     public:
-    SimulationWrapper();
+    SimulationWrapper(float delta_time = 0.01f);
     ~SimulationWrapper();
     
-    void calculateIteration(float deltatime);
+    void UpdateSimulation(float deltatime);
     bool addPlanet(const PlanetProperties& planet);
     size_t getPlanetCount() const;
     const std::vector<PlanetProperties>& getPlanets() const;
@@ -31,11 +33,51 @@ class SimulationWrapper
     const vector<Planet>& getRawPlanets() const;
     const std::vector<PlanetProperties>& getPlanetProperties() const { return planets; }
     
+
+    void setDeltaTime(float dt) { 
+        if (dt <= 0.000001f) { 
+            this->delta_time = 0.01f;
+            return;
+        }
+        this->delta_time = dt; 
+    }
+
+    float getDeltaTime() const { return this->delta_time; }
+
+    const std::vector<string>& getPlanetNames() const {
+        static std::vector<string> names;
+        names.clear();
+        for (const auto& p : planets) {
+            names.push_back(p.get_name());
+        }
+        return names;
+    }
+
+    void setPlanet_mass(size_t index, float mass) {
+        if (!bound_check(index)) return;
+            planets[index].set_mass(mass);
+        
+    }
+
+    void setPlanet_radius(size_t index, float radius) {
+        if (!bound_check(index)) return;
+            planets[index].set_radius(radius);
+        
+    }
+
+    
+    void setPlanet_velocity(size_t index, const glm::vec3& velocity) {
+        if (!bound_check(index)) return;
+            planets[index].set_velocity(velocity);
+    }
+
 };
 
-SimulationWrapper::SimulationWrapper()
+SimulationWrapper::SimulationWrapper(float delta_time) : delta_time(delta_time)
 {
     planets.clear();
+
+    
 }
 
 SimulationWrapper::~SimulationWrapper()
@@ -87,7 +129,7 @@ const vector<Planet>& SimulationWrapper::getRawPlanets() const {
     }
     return raw_planets;
 }
-void SimulationWrapper::calculateIteration(float deltatime) {
+void SimulationWrapper::UpdateSimulation(float deltatime) {
     // TO-DO: implement the simulation step calculations
     size_t i, j;
     const size_t n_planets = planets.size();
@@ -100,13 +142,13 @@ void SimulationWrapper::calculateIteration(float deltatime) {
             
             PlanetProperties& p2 = planets[j];
             glm::vec3 force = p2.apply_newton_law(p1);
-            p1.accumulateForce(+force);   
-            p2.accumulateForce(-force); 
+            p1.accumulateForce(-force);   
+            p2.accumulateForce(+force); 
         }
     }
 
     // After all forces are calculated, update each planet
-    for(auto p : planets) p.update(static_cast<float>(deltatime));
+    for(auto &p : planets) p.update(static_cast<float>(deltatime));
 }
 
 

@@ -5,7 +5,7 @@
 
 // TODO: add templated format ie. float, double, int ...
 
-static float G_CONSTANT = 6.673e-2;
+static float G_CONSTANT = 1.0f;
 class Planet
 {
 private:
@@ -18,9 +18,11 @@ private:
 
     float mass;
     float radius;
+
+    bool fix_position;
     
 public:
-    Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color);
+    Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color, bool fix_position = false);
 
     
     glm::vec3 get_position()     const { return position; }
@@ -30,6 +32,7 @@ public:
     glm::vec3 get_force()        const { return force; }
     float     get_mass()         const { return mass; }
     float     get_radius()       const { return radius; }
+    bool      is_fixed()         const { return fix_position; }
 
     void set_position(glm::vec3 position)           { this->position = position; }
     void set_velocity(glm::vec3 velocity)           { this->velocity = velocity; }
@@ -38,6 +41,7 @@ public:
     void set_color(glm::vec3 color)                 { this->color = color; }
     void set_mass(float mass)                       { this->mass = mass; }
     void set_radius(float radius)                   { this->radius = radius; }
+    void set_fixed(bool fix_position)               { this->fix_position = fix_position; }
 
     void update(float dt);
     
@@ -53,26 +57,26 @@ public:
     ~Planet();
 };
 
-Planet::Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color):
+Planet::Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color, bool fix_position):
     position(position), velocity(velocity), acceleration(acceleration), color(color),
-    mass(mass), radius(radius) {}
+    mass(mass), radius(radius), fix_position(fix_position) {}
 
 void Planet::update(float dt) {
     
-    if(dt <= 0.0f) return;  
-    apply_acceleration(force/10.0f);
+    if (dt <= 0.0f || fix_position) return;
+    
 
+    // apply_acceleration(force/10.0f);
 
+    acceleration = force / mass;
+
+    
     velocity += acceleration * dt;  // v = v + a*dt
     position += velocity * dt;      // p = p + v*dt
     // acceleration = {0,0,0};      // zero acceleration after update ?
     set_force({0,0,0});             // zero force after update
 }
 
-
-void Planet::apply_acceleration(const glm::vec3& force) {
-    acceleration = force / mass;
-}
 
 void Planet::accumulateForce(const glm::vec3& ext_force) {
     force += ext_force;
@@ -114,17 +118,18 @@ float Planet::distance(const Planet &OtherPlanet) const{
 
 glm::vec3 Planet::apply_newton_law(const Planet &OtherPlanet)
 {
-    glm::vec3 direction = OtherPlanet.get_position() - this->get_position();
-    float dist = glm::length(direction);
-    // dist = dist < 0.000001f ? 0.000001f : dist; // prevent division by zero
+    // glm::vec3 direction = OtherPlanet.get_position() - this->get_position();
+    // float dist = glm::length(direction);
+    // direction = glm::normalize(direction);
+    // float forceMagnitude = (G_CONSTANT * this->get_mass() * OtherPlanet.get_mass()) / (dist * dist);
+    // return forceMagnitude * direction;
 
-    direction = glm::normalize(direction);
-    
-    float forceMagnitude = (G_CONSTANT * this->get_mass() * OtherPlanet.get_mass()) / (dist * dist);
-
-    // this->check_colision(OtherPlanet);
-
-    return forceMagnitude * direction;
+    glm::vec3 dir = OtherPlanet.get_position() - get_position();
+    float eps = 0.01f; // suavização
+    float dist2 = glm::dot(dir, dir) + eps * eps;
+    float invDist = 1.0f / sqrt(dist2);
+    float invDist3 = invDist * invDist * invDist;
+    return G_CONSTANT * mass * OtherPlanet.get_mass() * dir * invDist3;
 }
 
 

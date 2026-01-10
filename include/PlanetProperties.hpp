@@ -27,6 +27,8 @@ public:
     // glm::vec3 get_color() const { return color; }
     std::string get_name() const { return name; }
 
+    void set_name(const std::string& name) { this->name = name; }
+
     Planet toPlanet() const {
         return Planet(get_position(), get_velocity(), get_acceleration(), get_radius(), get_mass(), glm::vec3(1.0f));
     }

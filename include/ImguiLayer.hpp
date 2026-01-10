@@ -31,6 +31,16 @@ namespace gui
     constexpr int HEIGHT = 600;
     constexpr char VIEW_TITLE[] = "Simulation Viewer";    
     
+    static float MIN_RADIUS = 0.1f;
+    static float MAX_RADIUS = 10.0f;
+
+    static float MIN_MASS = 0.1f;
+    static float MAX_MASS = 50.0f;
+
+    static float MIN_TIMESCALE = 01.0f;
+    static float MAX_TIMESCALE = 10.0f;
+
+
     // Persistent Data for Window Managing
     struct ImGuiWindowData {
         bool ShowWelcomeWindow       = false; //TODO: set to true to show at start
@@ -45,6 +55,8 @@ namespace gui
         // Debugger Tools
         bool ShowDebugLog = false;
         bool ShowAbout = false;
+
+        // Parameters Constraints
     };
     
     enum Options
@@ -338,23 +350,69 @@ namespace gui
         //2. Control Panel Variables
         static float timeScale = 1.0f;
         static bool isPaused = true;
-        static int iterations = 100;
         static float gravity[3] = { 0.0f, -9.81f, 0.0f };
         static float camPos[3]   = { 0.0f, 0.0f, 0.0f };
-        static float camFront[3] = { 0.0f, 0.0f, 0.0f };
-        static float camUp[3]    = { 0.0f, 0.0f, 0.0f };
+        static float camFront[3] = {10.0f, 0.0f, 0.0f };
+        static float camUp[3]    = { 5.0f, 5.0f, 0.0f };
 
         static bool showGrid = true;
-        
-        
-        // 3. Planet Management Variables
-        const char* items[] = { "", "Earth", "Mars", "Pluto", "Sun" };
-        static int item = 0;
-        static float planet_parameters[3] = { 1.0f, 2.0f, 3.0f }; // radius, mass, velocity
+        simulation->setDeltaTime(0.001f); // assuming 60 FPS base
 
+        if (!isPaused){
+            simulation->UpdateSimulation(simulation->getDeltaTime());
+        }
+        
+        
+        // --------- CAMERA UPDATE -----------
         gfx->set_cameraPos(camPos[0], camPos[1], camPos[2]);
         gfx->set_cameraFront(camFront[0], camFront[1], camFront[2]);
         gfx->set_cameraUp(camUp[0], camUp[1], camUp[2]);
+        
+
+        // ---------- PLANET CONTROLS UPDATE ---------
+        // 3. Planet Management Variables
+
+        // std::vector<std::string> items = {"Earth", "Mars", "Pluto", "Sun"};
+
+        std::vector<std::string> planet_names = simulation->getPlanetNames();
+        static int planet_idx = 0;
+        static int item = -1;
+        
+        static float radius = 0.0f;
+        static float mass = 0.0f;
+        static float velocity[3] = { 0.0f, 0.0f, 0.0f };
+
+
+        if (item != -1 && item != planet_idx) {
+            planet_idx = item;
+            radius = simulation->getPlanets()[item].get_radius();
+            mass = simulation->getPlanets()[item].get_mass();
+            glm::vec3 vel = simulation->getPlanets()[item].get_velocity();
+            velocity[0] = vel.x;
+            velocity[1] = vel.y;
+            velocity[2] = vel.z;
+        }
+        
+        bool valuesChanged = true;
+        if (item != -1) {
+            valuesChanged |= ImGui::SliderFloat("Radius##planet", &radius, MIN_RADIUS, MAX_RADIUS);
+            valuesChanged |= ImGui::SliderFloat("Mass##planet", &mass, MIN_MASS, MAX_MASS);
+            valuesChanged |= ImGui::InputFloat3("Velocity##planet", velocity);
+        }
+        
+        
+        if (item != -1) {
+            simulation->setPlanet_radius(item, radius);
+            simulation->setPlanet_mass(item, mass);
+            simulation->setPlanet_velocity(item, glm::vec3(velocity[0], velocity[1], velocity[2]));
+            sys_logger.info("Planet param changed: radius=" + std::to_string(radius) + 
+                                 ", mass=" + std::to_string(mass) + 
+                                 ", velocity=(" + std::to_string(velocity[0]) + ", " + 
+                                std::to_string(velocity[1]) + ", " + std::to_string(velocity[2]) + ")");
+        }
+        // valuesChanged = false;
+
+        
 
 
 
@@ -418,8 +476,8 @@ namespace gui
                 ImGui::Text("Physics Parameters");
                 
                 // --------- Sliders - Physiscs Params -----------
-                ImGui::DragFloat("Time Scale", &timeScale, 0.1f, 0.0f, 5.0f);
-                ImGui::SliderInt("Iterations", &iterations, 1, 1000);
+                ImGui::DragFloat("Time Scale", &timeScale, 0.1f, MIN_TIMESCALE, MAX_TIMESCALE);
+                // ImGui::SliderInt("Iterations", &iterations, 1, 1000);
                 ImGui::InputFloat3("Gravity", gravity);
                 
 
@@ -439,7 +497,9 @@ namespace gui
                 ImGui::Text("System Status");
                 
                 // Read-only text
-                ImGui::Text("Objects: %d", 42);
+                ImGui::Text("Objects: %d", simulation->getPlanetCount());
+                ImGui::Text("delta-time: %.4f", isPaused ? 0.0f : simulation->getDeltaTime());
+
                 ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
                 if (isPaused) ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: PAUSED");
                 else          ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: RUNNING");
@@ -454,25 +514,25 @@ namespace gui
                 ImGui::Spacing();
                 
                 // Playback controls
-                ImGui::Combo("Object", &item, items, IM_ARRAYSIZE(items)); //ImGui::SameLine();
-                ImGui::SliderFloat("Radius", &planet_parameters[0], 0.0f, 5.0f); //ImGui::SameLine();
-                ImGui::SliderFloat("Mass", &planet_parameters[1], 0.0f, 5.0f); //ImGui::SameLine();
-                ImGui::SliderFloat("Velocity", &planet_parameters[2], 0.0f, 5.0f);
+                if (ImGui::BeginCombo("Combo", item == -1 ? "" : planet_names[item].c_str())){
+                    for (int n = 0; n < planet_names.size(); n++){
+                        bool is_selected = (item == n);
+                        if (ImGui::Selectable(planet_names[n].c_str(), is_selected))
+                        item = n;
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+                ImGui::SliderFloat("Radius", &radius, MIN_RADIUS, MAX_RADIUS); //ImGui::SameLine();
+                ImGui::SliderFloat("Mass", &mass, MIN_MASS, MAX_MASS); //ImGui::SameLine();
+                // ImGui::SliderFloat("Velocity", &planet_parameters[2], 0.0f, 5.0f);
                 ImGui::Spacing();
                 
                 // ImGui::SameLine();
-                if (ImGui::Button("SAVE / SET", ImVec2(80, 30))) {
+                // if (ImGui::Button("SAVE / SET", ImVec2(80, 30))) {
                     //send values to simulation (TODO)
-                }
+                // }
                 
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Text("System Status");
-                
-                // Read-only text
-                ImGui::Text("Object: %s", item == -1 ? "" : items[item]);
-                ImGui::Text("Velocity(m/s): %.1f", 40.0f);
-                ImGui::Text("Acceleration(m/s²): %.1f", 100.0f);
                 
                 // if (isPaused) ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: PAUSED");
                 // else          ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: RUNNING");
