@@ -78,25 +78,25 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 ########################################################
 # Samples for testing purposes
 ########################################################
-set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
+# set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
 
-add_executable(imgui_sample "${SAMPLES_DIR}/imgui_sample.cpp")
-target_link_libraries(imgui_sample PRIVATE 
-    common_libs
-)
+# add_executable(imgui_sample "${SAMPLES_DIR}/imgui_sample.cpp")
+# target_link_libraries(imgui_sample PRIVATE 
+#     common_libs
+# )
 
 
-add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
-target_link_libraries(CorpSimulation PRIVATE 
-    common_libs
-)
+# add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
+# target_link_libraries(CorpSimulation PRIVATE 
+#     common_libs
+# )
 
-add_executable(imgui_glad_cube "${SAMPLES_DIR}/imgui_glad_cube.cpp")
-target_link_libraries(imgui_glad_cube PRIVATE 
-    common_libs
-    glad
-    glfw
-    imgui
-    glm::glm
-    SDL2::SDL2 
-)
+# add_executable(imgui_glad_cube "${SAMPLES_DIR}/imgui_glad_cube.cpp")
+# target_link_libraries(imgui_glad_cube PRIVATE 
+#     common_libs
+#     glad
+#     glfw
+#     imgui
+#     glm::glm
+#     SDL2::SDL2 
+# )
