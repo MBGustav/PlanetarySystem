@@ -1,0 +1,12 @@
+// Only one planet
+{
+  "planets": [
+    {
+      "name": "Earth",
+      "mass": 5.972e24,
+      "radius": 6371,
+      "position": [0, 0, 0],
+      "velocity": [0, 0, 0] 
+    }
+  ]
+}

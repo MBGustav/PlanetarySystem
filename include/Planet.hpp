@@ -8,22 +8,22 @@
 static float G_CONSTANT = 1.0f;
 class Planet
 {
-private:
+    private:
     
     glm::vec3 position;
     glm::vec3 velocity;
     glm::vec3 acceleration;
     glm::vec3 force;
     glm::vec3 color;
-
+    
     float mass;
     float radius;
-
+    
     bool fix_position;
     
-public:
+    public:
     Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color, bool fix_position = false);
-
+    
     
     glm::vec3 get_position()     const { return position; }
     glm::vec3 get_velocity()     const { return velocity; }
@@ -33,7 +33,40 @@ public:
     float     get_mass()         const { return mass; }
     float     get_radius()       const { return radius; }
     bool      is_fixed()         const { return fix_position; }
-
+    
+    
+    
+    
+    void set_position(vector<double> vec_position)           
+    { 
+        if(vec_position.size() != 3) return;
+        this->position = {vec_position[0], vec_position[1], vec_position[2]}; 
+    }
+    
+    void set_velocity(vector<double> vec_velocity)           
+    { 
+        if(vec_velocity.size() != 3) return;
+        this->velocity = {vec_velocity[0], vec_velocity[1], vec_velocity[2]}; 
+    }
+    
+    void set_acceleration(vector<double> vec_acceleration)   
+    { 
+        if(vec_acceleration.size() != 3) return;
+        this->acceleration = {vec_acceleration[0], vec_acceleration[1], vec_acceleration[2]}; 
+    }
+    
+    void set_force(vector<double> vec_force)                 
+    { 
+        if(vec_force.size() != 3) return;
+        this->force = {vec_force[0], vec_force[1], vec_force[2]}; 
+    }
+    
+    void set_color(vector<double> vec_color)                 
+    { 
+        if(vec_color.size() != 3) return;
+        this->color = {vec_color[0], vec_color[1], vec_color[2]}; 
+    }
+    
     void set_position(glm::vec3 position)           { this->position = position; }
     void set_velocity(glm::vec3 velocity)           { this->velocity = velocity; }
     void set_acceleration(glm::vec3 acceleration)   { this->acceleration = acceleration; }
@@ -42,34 +75,34 @@ public:
     void set_mass(float mass)                       { this->mass = mass; }
     void set_radius(float radius)                   { this->radius = radius; }
     void set_fixed(bool fix_position)               { this->fix_position = fix_position; }
-
+    
     void update(float dt);
     
     void accumulateForce(const glm::vec3& force);
     void apply_acceleration(const glm::vec3& force);
-
+    
     float distance(const Planet &OtherPlanet) const;
     bool check_colision(const Planet &OtherPlanet);
     
     glm::vec3 apply_newton_law(const Planet &OtherPlanet);
     void elastic_colision(Planet &OtherPlanet);
-
+    
     ~Planet();
 };
 
 Planet::Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color, bool fix_position):
-    position(position), velocity(velocity), acceleration(acceleration), color(color),
-    mass(mass), radius(radius), fix_position(fix_position) {}
+position(position), velocity(velocity), acceleration(acceleration), color(color),
+mass(mass), radius(radius), fix_position(fix_position) {}
 
 void Planet::update(float dt) {
     
     if (dt <= 0.0f || fix_position) return;
     
-
+    
     // apply_acceleration(force/10.0f);
-
+    
     acceleration = force / mass;
-
+    
     
     velocity += acceleration * dt;  // v = v + a*dt
     position += velocity * dt;      // p = p + v*dt
@@ -86,18 +119,18 @@ void Planet::elastic_colision(Planet &A) {
     // Placeholder for elastic collision logic
     // In a real application, you would calculate the new velocities
     // based on conservation of momentum and kinetic energy.
-
+    
     glm::vec3 normal = glm::normalize(A.get_position() - this->get_position());
-
+    
     glm::vec3 r_vel = this->get_velocity() - A.get_velocity();
-
+    
     glm::vec3 v_normal = glm::dot(r_vel, normal) * normal;
-
+    
     // Update velocities
     A.set_velocity(A.get_velocity() + v_normal);
     set_velocity(get_velocity() - v_normal);
-
-
+    
+    
 }
 
 bool Planet::check_colision(const Planet &OtherPlanet)
@@ -123,7 +156,7 @@ glm::vec3 Planet::apply_newton_law(const Planet &OtherPlanet)
     // direction = glm::normalize(direction);
     // float forceMagnitude = (G_CONSTANT * this->get_mass() * OtherPlanet.get_mass()) / (dist * dist);
     // return forceMagnitude * direction;
-
+    
     glm::vec3 dir = OtherPlanet.get_position() - get_position();
     float eps = 0.01f; // suavização
     float dist2 = glm::dot(dir, dir) + eps * eps;
