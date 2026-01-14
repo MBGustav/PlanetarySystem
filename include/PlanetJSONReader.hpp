@@ -22,7 +22,6 @@ class PlanetJSONReader : public JSONReader {
     
     // Lê o JSON e popula o vetor planets
     void parse_planets() {
-        // NÃO chame parse_content() aqui novamente. O construtor base já fez isso.
         auto it = data_map.find("planets");
         if (it != data_map.end()) {
             // A string no mapa contém o array bruto JSON. Convertê-lo agora:
@@ -48,8 +47,8 @@ class PlanetJSONReader : public JSONReader {
         
         return result;
     }
+
     
-    // Converte string de objeto planeta em struct Planet
     static PlanetProperties parse_planet_object(const std::string &obj_str) {
         PlanetProperties planet;
         std::map<std::string, std::string> temp_map; // Mapa local para este objeto
@@ -102,7 +101,6 @@ class PlanetJSONReader : public JSONReader {
         return planet;
     }
     
-    // Converte array de objetos em vector<Planet>
     static std::vector<PlanetProperties> parse_planets_array(const std::string &array_str) {
         std::vector<PlanetProperties> planets;
         int brace_count = 0;
@@ -132,7 +130,6 @@ class PlanetJSONReader : public JSONReader {
             }
             
             // Se brace_count == 0, qualquer caractere (vírgula, espaço) é ignorado aqui,
-            // o que resolve o problema de transição entre "Earth" e "Pluto".
         }
         
         return planets;

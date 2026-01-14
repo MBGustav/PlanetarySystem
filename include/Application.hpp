@@ -57,11 +57,11 @@ inline void Application::setup()
     
     PlanetProperties sunProps;
     float sunMass = 1000.0f;
-    sunProps.set_position({0.0f, 0.0f, 0.0f});
-    sunProps.set_velocity({0.0f, 0.0f, 0.0f});
+    sunProps.set_position(glm::vec3(0.0f, 0.0f, 0.0f));
+    sunProps.set_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
     sunProps.set_radius(1.5f);
     sunProps.set_mass(sunMass);
-    sunProps.set_color({255.0f, 255.0f, 255.0f});
+    sunProps.set_color(glm::vec3(255.0f, 255.0f, 255.0f));
     sunProps.set_name("Sun");
     sunProps.set_fixed(true); // Sun is fixed in space
 
@@ -72,8 +72,8 @@ inline void Application::setup()
 
 
     PlanetProperties earthProps;
-    earthProps.set_position({ 0.0f, orbit_radius, 0.0f});
-    earthProps.set_velocity({0.0, 0.0, orbit_speed});
+    earthProps.set_position(glm::vec3(0.0f, orbit_radius, 0.0f));
+    earthProps.set_velocity(glm::vec3(0.0f, 0.0f, orbit_speed));
     earthProps.set_radius(0.5f);
     earthProps.set_mass(1.0f);
     earthProps.set_name("Earth");
@@ -82,11 +82,11 @@ inline void Application::setup()
     orbit_speed = sqrt((G_CONSTANT * sunMass) / orbit_radius ); // simplified orbital speed formula
 
     PlanetProperties marsProps;
-    marsProps.set_position({0.0f, orbit_radius, 0.0f});
-    marsProps.set_velocity({0.0f, 0.00f, orbit_speed});
+    marsProps.set_position(glm::vec3(0.0f, orbit_radius, 0.0f));
+    marsProps.set_velocity(glm::vec3(0.0f, 0.0f, orbit_speed));
     marsProps.set_radius(0.3f);
     marsProps.set_mass(1.0f);
-    marsProps.set_color({1.0f, 0.0f, 3.0f});
+    marsProps.set_color(glm::vec3(1.0f, 0.0f, 3.0f));
     marsProps.set_name("Mars");
 
     orbit_radius = 20.0f;
