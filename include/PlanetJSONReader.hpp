@@ -8,11 +8,13 @@
 #include "PlanetProperties.hpp"
 #include "JSONReader.hpp"
 
-class PlanetJSONReader : private JSONReader {
+class PlanetJSONReader : public JSONReader {
 public:
     std::vector<PlanetProperties> planets;
 
-    PlanetJSONReader(const std::string &path) : JSONReader(path) {}
+    PlanetJSONReader(const std::string &path) : JSONReader(path) {
+        parse_planets(); 
+    }
 
     std::vector<PlanetProperties> get_planets() const {
         return planets;
@@ -20,10 +22,10 @@ public:
 
     // Lê o JSON e popula o vetor planets
     void parse_planets() {
-        parse_content(); // usa método genérico da base
-
+        // NÃO chame parse_content() aqui novamente. O construtor base já fez isso.
         auto it = data_map.find("planets");
         if (it != data_map.end()) {
+            // A string no mapa contém o array bruto JSON. Convertê-lo agora:
             planets = parse_planets_array(it->second);
         }
     }
@@ -50,75 +52,76 @@ private:
     // Converte string de objeto planeta em struct Planet
     static PlanetProperties parse_planet_object(const std::string &obj_str) {
         PlanetProperties planet;
-        std::map<std::string, std::string> data_map;
+        std::map<std::string, std::string> temp_map; // Mapa local para este objeto
 
         char c;
         std::string key, value;
-
-        auto to_lower = [](std::string &str) {
-            std::transform(str.begin(), str.end(), str.begin(),
-                           [](unsigned char c){ return std::tolower(c); });
-        };
 
         std::istringstream file(obj_str);
         while (file >> c) {
             if (c == '"') {
                 std::getline(file, key, '"');
-                file >> c; // :
-                file >> c; // próximo char do valor
-
-                if (c == '"') { // string
+                file >> c; // espera :
+                
+                // Lê o valor (pode ser string, numero ou array)
+                file >> c; 
+                if (c == '"') {
                     std::getline(file, value, '"');
-                } else if (c == '[') { // array
+                } else if (c == '[') {
                     value.clear();
+                    // value += '['; // Opcional: manter os colchetes
                     int bracket_count = 1;
                     char arr_char;
                     while (file.get(arr_char) && bracket_count > 0) {
                         if (arr_char == '[') bracket_count++;
                         else if (arr_char == ']') bracket_count--;
-                        if (bracket_count > 0) value += arr_char;
+                        if (bracket_count > 0) value += arr_char; // Pega conteúdo interno
                     }
-                } else { // número
+                } else {
                     value.clear();
-                    while (!std::isspace(c) && c != ',' && c != '}') {
+                    value += c; // Já leu o primeiro char do número
+                    while (file.get(c) && !std::isspace(c) && c != ',' && c != '}') {
                         value += c;
-                        file.get(c);
                     }
+                    // Se leu ',' ou '}', o loop para, mas o stream avança. Ok para parsing simples.
                 }
 
-                to_lower(key);
-                data_map[key] = value;
+                // Normaliza chave
+                std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+                temp_map[key] = value;
             }
         }
 
-        // Fill with planet prop.
-        planet.set_name(data_map["name"]) ;
-        planet.set_mass(std::stod(data_map["mass"])) ;
-        planet.set_radius(std::stod(data_map["radius"])) ;
-        planet.set_position(parse_array(data_map["position"])) ;
-        planet.set_velocity(parse_array(data_map["velocity"])) ;
+        // Popula o objeto PlanetProperties
+        if(temp_map.count("name")) planet.set_name(temp_map["name"]);
+        if(temp_map.count("mass")) planet.set_mass(std::stod(temp_map["mass"]));
+        if(temp_map.count("radius")) planet.set_radius(std::stod(temp_map["radius"]));
+        if(temp_map.count("position")) planet.set_position(parse_array(temp_map["position"]));
+        if(temp_map.count("velocity")) planet.set_velocity(parse_array(temp_map["velocity"]));
 
         return planet;
     }
 
     // Converte array de objetos em vector<Planet>
-    static std::vector<Planet> parse_planets_array(const std::string &array_str) {
-        std::vector<Planet> planets;
+    static std::vector<PlanetProperties> parse_planets_array(const std::string &array_str) {
+        std::vector<PlanetProperties> result_planets;
         int brace_count = 0;
         std::string current_obj;
 
         for (char c : array_str) {
             if (c == '{') brace_count++;
+            
             if (brace_count > 0) current_obj += c;
+            
             if (c == '}') {
                 brace_count--;
                 if (brace_count == 0) {
-                    planets.push_back(parse_planet_object(current_obj));
+                    // Fim de um objeto, parsear ele
+                    result_planets.push_back(parse_planet_object(current_obj));
                     current_obj.clear();
                 }
             }
         }
-
-        return planets;
+        return result_planets;
     }
 };

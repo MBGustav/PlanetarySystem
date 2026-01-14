@@ -2,7 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <vector>
 
+using std::vector ;
 // TODO: add templated format ie. float, double, int ...
 
 static float G_CONSTANT = 1.0f;
@@ -107,7 +109,8 @@ void Planet::update(float dt) {
     velocity += acceleration * dt;  // v = v + a*dt
     position += velocity * dt;      // p = p + v*dt
     // acceleration = {0,0,0};      // zero acceleration after update ?
-    set_force({0,0,0});             // zero force after update
+    glm::vec3  f = {0,0,0};
+    set_force(f);             // zero force after update
 }
 
 

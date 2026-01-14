@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <filesystem>
 // This class is responsible for reading JSON files and returning a map of key-value pairs in string format.
 // We consider a very simple JSON structure with only one nested objects with arrays for this implementation.
 
@@ -39,7 +40,10 @@ void JSONReader::open_file()
         
         else
         { 
-            throw std::runtime_error("File not found: " + filepath);
+            
+            std::filesystem::path full_path = std::filesystem::absolute(this->filepath);
+
+            throw std::runtime_error("File not found: " + full_path.string());
         } 
 
         data_map.clear();
@@ -51,8 +55,11 @@ void JSONReader::open_file()
     }
 }
 
-JSONReader::JSONReader(std::string filepath) : filepath(filepath)
+JSONReader::JSONReader(std::string path)
 {
+    auto fs = std::filesystem::absolute(path);
+    fs = fs.lexically_normal();
+    filepath = fs.string();
     open_file();
 }
 
@@ -198,9 +205,11 @@ bool JSONReader::file_exists() const
 {
     try
     {
-        std::ifstream file(this->filepath);
-        if (!file.is_open()) {
-            throw std::runtime_error("File not found: " + this->filepath);
+        std::filesystem::path full_path = std::filesystem::absolute(this->filepath);
+        full_path = full_path.lexically_normal();
+        std::ifstream file(full_path);
+        if (!file.is_open()) { 
+            throw std::runtime_error("File not found: " + full_path.string());
         }
         return file.good();
     }
