@@ -9,7 +9,7 @@
 #include "JSONReader.hpp"
 
 class PlanetJSONReader : public JSONReader {
-    public:
+public:
     std::vector<PlanetProperties> planets;
     
     PlanetJSONReader(const std::string &path) : JSONReader(path) {
@@ -29,7 +29,7 @@ class PlanetJSONReader : public JSONReader {
         }
     }
     
-    private:
+private:
     // Converte string de array para vector<double>
     static std::vector<double> parse_array(const std::string &str) {
         std::vector<double> result;
@@ -85,18 +85,19 @@ class PlanetJSONReader : public JSONReader {
                     // Se leu ',' ou '}', o loop para, mas o stream avança. Ok para parsing simples.
                 }
                 
-                // Normaliza chave
-                std::transform(key.begin(), key.end(), key.begin(), ::tolower);
                 temp_map[key] = value;
             }
         }
         
         // Popula o objeto PlanetProperties
-        if(temp_map.count("name")) planet.set_name(temp_map["name"]);
-        if(temp_map.count("mass")) planet.set_mass(std::stod(temp_map["mass"]));
-        if(temp_map.count("radius")) planet.set_radius(std::stod(temp_map["radius"]));
+        if(temp_map.count("name"))     planet.set_name(temp_map["name"]);
+        if(temp_map.count("mass"))     planet.set_mass(std::stod(temp_map["mass"]));
+        if(temp_map.count("radius"))   planet.set_radius(std::stod(temp_map["radius"]));
         if(temp_map.count("position")) planet.set_position(parse_array(temp_map["position"]));
         if(temp_map.count("velocity")) planet.set_velocity(parse_array(temp_map["velocity"]));
+        
+        // Fix it
+        // if(temp_map.count("color")) planet.set_color(temp_map["color"]);
         
         return planet;
     }

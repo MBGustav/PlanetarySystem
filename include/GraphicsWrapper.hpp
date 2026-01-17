@@ -26,9 +26,14 @@ namespace graphics {
         float width, height;
         
         // --- Camera Properties ---
-        glm::vec3 cameraPos   = {0.0f, 0.0f, 0.0f};
-        glm::vec3 cameraFront = {10.0f, 0.0f, 0.0f};
-        glm::vec3 cameraUp    = {5.0f, 5.0f, 0.0f};
+        // glm::vec3 cameraPos   = {0.0f, 0.0f, 0.0f};
+        // glm::vec3 cameraFront = {10.0f, 0.0f, 0.0f};
+        // glm::vec3 cameraUp    = {5.0f, 5.0f, 0.0f};
+        float pos[3] = {0.0f, 0.0f, 3.0f};
+        float yaw = -90.0f;
+        float pitch = 0.0f;
+        float fov = 45.0f;
+        float front[3] = {0.0f, 0.0f, -1.0f}; // Vetor calculado
         
         
         
@@ -44,19 +49,47 @@ namespace graphics {
         
         public:
         
-        void set_cameraPos(glm::vec3 pos)   { cameraPos = pos; }
-        void set_cameraFront(glm::vec3 pos) { cameraFront = pos; }
-        void set_cameraUp(glm::vec3 pos)    { cameraUp = pos; }
+        struct Camera {
+            
+            glm::vec3 Position = glm::vec3(0.0f, 0.0f, 15.0f);
+            glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
+            glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+            glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+            
+            // Euler Angles
+            float Yaw = -90.0f;
+            float Pitch = 0.0f;
+            
+            // Opções de lente
+            float Fov = 45.0f;
+            
+            void updateVectors() {
+                glm::vec3 newFront;
+                newFront.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+                newFront.y = sin(glm::radians(Pitch));
+                newFront.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+                Front = glm::normalize(newFront);
+                
+                glm::vec3 Right = glm::normalize(glm::cross(Front, WorldUp));
+                Up = glm::normalize(glm::cross(Right, Front));
+            }
+        };
+        
+        Camera camera;
+        
+        // void set_cameraPos(glm::vec3 pos)   { cameraPos = pos; }
+        // void set_cameraFront(glm::vec3 pos) { cameraFront = pos; }
+        // void set_cameraUp(glm::vec3 pos)    { cameraUp = pos; }
         
         
-        void set_cameraPos(float x, float y,float z)   { cameraPos   = {x,y,z}; }
-        void set_cameraFront(float x, float y,float z) { cameraFront = {x,y,z}; }
-        void set_cameraUp(float x, float y,float z)    { cameraUp    = {x,y,z}; }
+        // void set_cameraPos(float x, float y,float z)   { cameraPos   = {x,y,z}; }
+        // void set_cameraFront(float x, float y,float z) { cameraFront = {x,y,z}; }
+        // void set_cameraUp(float x, float y,float z)    { cameraUp    = {x,y,z}; }
         
         
-        glm::vec3 get_cameraPos()     const { return cameraPos; }
-        glm::vec3 get_cameraFront()   const { return cameraFront; }
-        glm::vec3 get_cameraUp()      const { return cameraUp; }
+        glm::vec3 get_cameraPos()     const { return camera.Position; }
+        glm::vec3 get_cameraFront()   const { return camera.Front; }
+        glm::vec3 get_cameraUp()      const { return camera.Up; }
         
         
         void createVAO()
@@ -198,15 +231,15 @@ namespace graphics {
                 glBindVertexArray(VAO);
                 
                 glm::mat4 view = glm::lookAt(
-                    cameraPos,
-                    cameraPos + cameraFront, 
-                    cameraUp
+                    camera.Position,
+                    camera.Position + camera.Front, 
+                    camera.Up
                 );
                 
-                sys_logger.debug("Camera Position: (" + std::to_string(cameraPos.x) + ", " +
-                std::to_string(cameraPos.y) + ", " +
-                std::to_string(cameraPos.z) + ")");
-                
+                sys_logger.debug("Camera Position: (" + std::to_string(camera.Position.x) + ", " +
+                    std::to_string(camera.Position.y) + ", " +
+                    std::to_string(camera.Position.z) + ")"
+                );
                 
                 glm::mat4 projection = glm::perspective(
                     glm::radians(45.0f),
@@ -214,9 +247,6 @@ namespace graphics {
                     0.1f,
                     100.0f
                 );
-                
-                
-                
                 
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"view"),
                 1, GL_FALSE, &view[0][0]);
@@ -275,9 +305,11 @@ namespace graphics {
                 glUseProgram(shaderProgram);
                 glBindVertexArray(VAO);
                 
-                glm::mat4 view = glm::lookAt(cameraPos, // camera position
-                    cameraFront, // look at cube
-                    cameraUp); // up vector
+                glm::mat4 view = glm::lookAt(
+                    camera.Position,
+                    camera.Position + camera.Front, 
+                    camera.Up
+                );
                     
                     // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
                     glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportWidth / viewportHeight, 0.1f, 100.0f);

@@ -33,14 +33,14 @@ namespace gui
     
     static float MIN_RADIUS = 0.1f;
     static float MAX_RADIUS = 10.0f;
-
+    
     static float MIN_MASS = 0.1f;
     static float MAX_MASS = 50.0f;
-
+    
     static float MIN_TIMESCALE = 01.0f;
     static float MAX_TIMESCALE = 10.0f;
-
-
+    
+    
     // Persistent Data for Window Managing
     struct ImGuiWindowData {
         bool ShowWelcomeWindow       = false; //TODO: set to true to show at start
@@ -55,9 +55,10 @@ namespace gui
         // Debugger Tools
         bool ShowDebugLog = false;
         bool ShowAbout = false;
-
+        
         // Parameters Constraints
     };
+    
     
     enum Options
     {
@@ -104,7 +105,7 @@ namespace gui
     // Marked inline because they are implemented in a .hpp file
     
     inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper &graphics, SimulationWrapper &simulation): 
-            simulation(&simulation), gfx(&graphics){
+    simulation(&simulation), gfx(&graphics){
         sys_logger.debug("ImguiLayer constructor called");
     }
     
@@ -354,26 +355,26 @@ namespace gui
         static float camPos[3]   = { 0.0f, 0.0f, 0.0f };
         static float camFront[3] = {10.0f, 0.0f, 0.0f };
         static float camUp[3]    = { 5.0f, 5.0f, 0.0f };
-
+        
         static bool showGrid = true;
         simulation->setDeltaTime(0.001f); // assuming 60 FPS base
-
+        
         if (!isPaused){
-            simulation->UpdateSimulation(simulation->getDeltaTime());
+            simulation->UpdateSimulation(0.001f, timeScale);
         }
         
         
         // --------- CAMERA UPDATE -----------
-        gfx->set_cameraPos(camPos[0], camPos[1], camPos[2]);
-        gfx->set_cameraFront(camFront[0], camFront[1], camFront[2]);
-        gfx->set_cameraUp(camUp[0], camUp[1], camUp[2]);
+        // gfx->set_cameraPos(camPos[0], camPos[1], camPos[2]);
+        // gfx->set_cameraFront(camFront[0], camFront[1], camFront[2]);
+        // gfx->set_cameraUp(camUp[0], camUp[1], camUp[2]);
         
-
+        
         // ---------- PLANET CONTROLS UPDATE ---------
         // 3. Planet Management Variables
-
+        
         // std::vector<std::string> items = {"Earth", "Mars", "Pluto", "Sun"};
-
+        
         std::vector<std::string> planet_names = simulation->getPlanetNames();
         static int planet_idx = 0;
         static int item = -1;
@@ -381,8 +382,8 @@ namespace gui
         static float radius = 0.0f;
         static float mass = 0.0f;
         static float velocity[3] = { 0.0f, 0.0f, 0.0f };
-
-
+        
+        
         if (item != -1 && item != planet_idx) {
             planet_idx = item;
             radius = simulation->getPlanets()[item].get_radius();
@@ -406,16 +407,16 @@ namespace gui
             simulation->setPlanet_mass(item, mass);
             simulation->setPlanet_velocity(item, glm::vec3(velocity[0], velocity[1], velocity[2]));
             sys_logger.info("Planet param changed: radius=" + std::to_string(radius) + 
-                                 ", mass=" + std::to_string(mass) + 
-                                 ", velocity=(" + std::to_string(velocity[0]) + ", " + 
-                                std::to_string(velocity[1]) + ", " + std::to_string(velocity[2]) + ")");
+            ", mass=" + std::to_string(mass) + 
+            ", velocity=(" + std::to_string(velocity[0]) + ", " + 
+            std::to_string(velocity[1]) + ", " + std::to_string(velocity[2]) + ")");
         }
         // valuesChanged = false;
-
         
-
-
-
+        
+        
+        
+        
         // ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);
         // Get the viewport of the main window (the OS window)
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -480,18 +481,34 @@ namespace gui
                 // ImGui::SliderInt("Iterations", &iterations, 1, 1000);
                 ImGui::InputFloat3("Gravity", gravity);
                 
-
+                
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Text("Camera Controller");
-
-                ImGui::InputFloat3("Position", camPos);
-                ImGui::InputFloat3("Front", camFront);
-                ImGui::InputFloat3("Up", camUp);
                 
-
-
-
+                ImGui::DragFloat3("Position", &(gfx->camera.Position[0]), 0.1f);
+                
+                // 2. Rotação (Edita Yaw/Pitch e chama updateVectors)
+                bool rotationChanged = false;
+                rotationChanged |= ImGui::DragFloat("Yaw", &(gfx->camera.Yaw), 0.5f);
+                rotationChanged |= ImGui::SliderFloat("Pitch", &(gfx->camera.Pitch), -89.0f, 89.0f);
+                
+                if (rotationChanged) {
+                    gfx->camera.updateVectors();
+                }
+                
+                // 3. Zoom (FOV)
+                ImGui::SliderFloat("Zoom (FOV)", &(gfx->camera.Fov), 1.0f, 120.0f);
+                
+                ImGui::Separator();
+                if (ImGui::Button("Reset View")) {
+                    gfx->camera.Position = glm::vec3(0, 0, 15);
+                    gfx->camera.Yaw = -90.0f;
+                    gfx->camera.Pitch = 0.0f;
+                    gfx->camera.Fov = 45.0f;
+                    gfx->camera.updateVectors();
+                }                
+                
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Text("System Status");
@@ -499,7 +516,7 @@ namespace gui
                 // Read-only text
                 ImGui::Text("Objects: %d", simulation->getPlanetCount());
                 ImGui::Text("delta-time: %.4f", isPaused ? 0.0f : simulation->getDeltaTime());
-
+                
                 ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
                 if (isPaused) ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: PAUSED");
                 else          ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: RUNNING");
@@ -530,7 +547,7 @@ namespace gui
                 
                 // ImGui::SameLine();
                 // if (ImGui::Button("SAVE / SET", ImVec2(80, 30))) {
-                    //send values to simulation (TODO)
+                //send values to simulation (TODO)
                 // }
                 
                 

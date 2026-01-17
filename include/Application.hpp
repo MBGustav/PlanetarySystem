@@ -55,55 +55,37 @@ inline void Application::setup()
     
     // Create some default planets for testing
     
-    PlanetProperties sunProps;
-    float sunMass = 1000.0f;
-    sunProps.set_position(glm::vec3(0.0f, 0.0f, 0.0f));
-    sunProps.set_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
-    sunProps.set_radius(1.5f);
-    sunProps.set_mass(sunMass);
-    sunProps.set_color(glm::vec3(255.0f, 255.0f, 255.0f));
-    sunProps.set_name("Sun");
-    sunProps.set_fixed(true); // Sun is fixed in space
+    PlanetProperties JupyterProps, earthProps, marsProps;
 
 
     
-    float orbit_radius = 5.0f;
-    float orbit_speed = sqrt((G_CONSTANT * sunMass) / orbit_radius ); // simplified orbital speed formula
 
-
-    PlanetProperties earthProps;
-    earthProps.set_position(glm::vec3(0.0f, orbit_radius, 0.0f));
-    earthProps.set_velocity(glm::vec3(0.0f, 0.0f, orbit_speed));
+    earthProps.set_position(glm::vec3(0.0132604844f, 0.0f, 0.0f));
+    earthProps.set_velocity(glm::vec3(0.0f, 1.054151921f, 0.0f));
     earthProps.set_radius(0.5f);
     earthProps.set_mass(1.0f);
-    earthProps.set_name("Earth");
-    
-    orbit_radius = 15.0f;
-    orbit_speed = sqrt((G_CONSTANT * sunMass) / orbit_radius ); // simplified orbital speed formula
+    earthProps.set_name("Corp 1");
+    earthProps.set_fixed(false);
 
-    PlanetProperties marsProps;
-    marsProps.set_position(glm::vec3(0.0f, orbit_radius, 0.0f));
-    marsProps.set_velocity(glm::vec3(0.0f, 0.0f, orbit_speed));
-    marsProps.set_radius(0.3f);
+    marsProps.set_position(glm::vec3(1.4157286016f, 0.0f, 0.0f));
+    marsProps.set_velocity(glm::vec3(0.0f, -0.2101466639f,0.0f));
+    marsProps.set_radius(0.5f);
     marsProps.set_mass(1.0f);
     marsProps.set_color(glm::vec3(1.0f, 0.0f, 3.0f));
-    marsProps.set_name("Mars");
-
-    orbit_radius = 20.0f;
-    orbit_speed = sqrt((G_CONSTANT * sunMass) / orbit_radius ); // simplified orbital speed formula
+    marsProps.set_name("Corp 2");
 
 
     // PlanetProperties JupyterProps;
-    // JupyterProps.set_position({0.5f, orbit_radius, 0.0f});
-    // JupyterProps.set_velocity({0.0f, 0.00f, orbit_speed});
-    // JupyterProps.set_radius(0.3f);
-    // JupyterProps.set_mass(5.0f);
-    // JupyterProps.set_color({20.0f, 0.0f, 3.0f});
-    // JupyterProps.set_name("Jupiter");
+    JupyterProps.set_position(glm::vec3(-1.4289890859f, 0.0f, 0.0f));
+    JupyterProps.set_velocity(glm::vec3(0.0f, -0.8440052572f,0.0f));
+    JupyterProps.set_radius(0.5f);
+    JupyterProps.set_mass(1.0f);
+    JupyterProps.set_color(glm::vec3(20.0f, 0.0f, 3.0f));
+    JupyterProps.set_name("Corp 3");
 
 
     // simWrapper.addPlanet(JupyterProps);
-    simWrapper.addPlanet(sunProps);
+    simWrapper.addPlanet(JupyterProps);
     simWrapper.addPlanet(earthProps);
     simWrapper.addPlanet(marsProps);
 

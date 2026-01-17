@@ -13,26 +13,28 @@ using std::string;
 
 class SimulationWrapper
 {
-    private:
+private:
     
     std::vector<PlanetProperties> planets;
     float delta_time;
-    bool bound_check(size_t index){
-        return index < planets.size() && index >= 0;
-    }
+
+    float accumulator = 0.0f;
+    const float FIXED_DT = 0.005f; // 5ms (precisão alta para órbitas estáveis)
     
-    public:
+
+    bool bound_check(size_t index){return index < planets.size() && index >= 0;}
+    
+public:
     SimulationWrapper(float delta_time = 0.01f);
     ~SimulationWrapper();
     
-    void UpdateSimulation(float deltatime);
+    void StepPhysics(float deltatime);
     bool addPlanet(const PlanetProperties& planet);
     size_t getPlanetCount() const;
     const std::vector<PlanetProperties>& getPlanets() const;
     const std::vector<PlanetProperties>& getcopyPlanets() const;
-    const vector<Planet>& getRawPlanets() const;
     const std::vector<PlanetProperties>& getPlanetProperties() const { return planets; }
-    
+    void UpdateSimulation(float frameTime, float speedMultiplier = 1.0f);
 
     void setDeltaTime(float dt) { 
         if (dt <= 0.000001f) { 
@@ -121,15 +123,23 @@ const vector<PlanetProperties>& SimulationWrapper::getcopyPlanets() const {
     return copy_planets;
 }
 
-// Conversion to raw vector for graphics rendering
-const vector<Planet>& SimulationWrapper::getRawPlanets() const {
-    vector<Planet> raw_planets;
-    for(auto p : planets) {
-        raw_planets.push_back(p.toPlanet());
+
+void SimulationWrapper::UpdateSimulation(float frameTime, float speedMultiplier) {
+        
+        if (frameTime > 0.25f) frameTime = 0.25f;
+
+        // 2. Acumula o tempo real
+        accumulator += frameTime * speedMultiplier;
+
+        // 3. Consome o tempo em fatias fixas (Física estável)
+        while (accumulator >= FIXED_DT) {
+            StepPhysics(FIXED_DT);
+            accumulator -= FIXED_DT;
+        }
     }
-    return raw_planets;
-}
-void SimulationWrapper::UpdateSimulation(float deltatime) {
+
+
+void SimulationWrapper::StepPhysics(float deltatime) {
     // TO-DO: implement the simulation step calculations
     size_t i, j;
     const size_t n_planets = planets.size();

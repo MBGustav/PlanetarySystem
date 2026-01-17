@@ -81,13 +81,13 @@ class Planet
     void update(float dt);
     
     void accumulateForce(const glm::vec3& force);
-    void apply_acceleration(const glm::vec3& force);
+    // void apply_acceleration(const glm::vec3& force);
     
     float distance(const Planet &OtherPlanet) const;
-    bool check_colision(const Planet &OtherPlanet);
+    // bool check_colision(const Planet &OtherPlanet);
     
     glm::vec3 apply_newton_law(const Planet &OtherPlanet);
-    void elastic_colision(Planet &OtherPlanet);
+    // void elastic_colision(Planet &OtherPlanet);
     
     ~Planet();
 };
@@ -118,32 +118,6 @@ void Planet::accumulateForce(const glm::vec3& ext_force) {
     force += ext_force;
 }
 
-void Planet::elastic_colision(Planet &A) {
-    // Placeholder for elastic collision logic
-    // In a real application, you would calculate the new velocities
-    // based on conservation of momentum and kinetic energy.
-    
-    glm::vec3 normal = glm::normalize(A.get_position() - this->get_position());
-    
-    glm::vec3 r_vel = this->get_velocity() - A.get_velocity();
-    
-    glm::vec3 v_normal = glm::dot(r_vel, normal) * normal;
-    
-    // Update velocities
-    A.set_velocity(A.get_velocity() + v_normal);
-    set_velocity(get_velocity() - v_normal);
-    
-    
-}
-
-bool Planet::check_colision(const Planet &OtherPlanet)
-{
-    float dist = this->distance(OtherPlanet);
-    if (dist <= (this->get_radius() + OtherPlanet.get_radius())) {
-        return true;
-    }
-    return false;
-}
 
 
 float Planet::distance(const Planet &OtherPlanet) const{
@@ -154,11 +128,6 @@ float Planet::distance(const Planet &OtherPlanet) const{
 
 glm::vec3 Planet::apply_newton_law(const Planet &OtherPlanet)
 {
-    // glm::vec3 direction = OtherPlanet.get_position() - this->get_position();
-    // float dist = glm::length(direction);
-    // direction = glm::normalize(direction);
-    // float forceMagnitude = (G_CONSTANT * this->get_mass() * OtherPlanet.get_mass()) / (dist * dist);
-    // return forceMagnitude * direction;
     
     glm::vec3 dir = OtherPlanet.get_position() - get_position();
     float eps = 0.01f; // suavização
