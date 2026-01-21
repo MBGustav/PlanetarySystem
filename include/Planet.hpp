@@ -5,7 +5,9 @@
 
 // TODO: add templated format ie. float, double, int ...
 
-static float G_CONSTANT = 6.673e-2;
+static float G_CONSTANT = 2.96e-4;
+float M0 =0;
+float t0=0;
 class Planet
 {
 private:
@@ -13,7 +15,7 @@ private:
     glm::vec3 position;
     glm::vec3 velocity;
     glm::vec3 acceleration;
-    glm::vec3 force;
+    //glm::vec3 force;
     glm::vec3 color;
 
     float mass;
@@ -27,14 +29,14 @@ public:
     glm::vec3 get_velocity()     const { return velocity; }
     glm::vec3 get_acceleration() const { return acceleration; }
     glm::vec3 get_color()        const { return color; }
-    glm::vec3 get_force()        const { return force; }
+    //glm::vec3 get_force()        const { return force; }
     float     get_mass()         const { return mass; }
     float     get_radius()       const { return radius; }
 
     void set_position(glm::vec3 position)           { this->position = position; }
     void set_velocity(glm::vec3 velocity)           { this->velocity = velocity; }
     void set_acceleration(glm::vec3 acceleration)   { this->acceleration = acceleration; }
-    void set_force(glm::vec3 force)                 { this->force = force; }
+    //void set_force(glm::vec3 force)                 { this->force = force; }
     void set_color(glm::vec3 color)                 { this->color = color; }
     void set_mass(float mass)                       { this->mass = mass; }
     void set_radius(float radius)                   { this->radius = radius; }
@@ -42,7 +44,7 @@ public:
     void update(float dt);
     
     void accumulateForce(const glm::vec3& force);
-    void apply_acceleration(const glm::vec3& force);
+    void apply_acceleration(Planet another_planet);
 
     float distance(const Planet &OtherPlanet) const;
     bool check_colision(const Planet &OtherPlanet);
@@ -60,22 +62,26 @@ Planet::Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::ve
 void Planet::update(float dt) {
     
     if(dt <= 0.0f) return;  
-    apply_acceleration(force/10.0f);
+    //apply_acceleration(force/10.0f);
 
 
     velocity += acceleration * dt;  // v = v + a*dt
     position += velocity * dt;      // p = p + v*dt
+    
     // acceleration = {0,0,0};      // zero acceleration after update ?
-    set_force({0,0,0});             // zero force after update
+
+    //set_force({0,0,0});             // zero force after update
 }
 
 
-void Planet::apply_acceleration(const glm::vec3& force) {
-    acceleration = force / mass;
+void Planet::apply_acceleration(Planet another_planet) {
+    glm::vec3 rvect= another_planet.get_position() - position;
+    float rmag=this->distance(another_planet);
+    acceleration=(G_CONSTANT*(another_planet.mass)/rmag)*rvect ;
 }
 
 void Planet::accumulateForce(const glm::vec3& ext_force) {
-    force += ext_force;
+    //force += ext_force;
 }
 
 void Planet::elastic_colision(Planet &A) {

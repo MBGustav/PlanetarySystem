@@ -14,8 +14,10 @@ glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 5.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
-float deltaTime = 0.0f;
+float deltaTime = 1; // our delta time is fixed to one day
 float lastFrame = 0.0f;
+static float G = 2.96e-4;
+
 
 // === Input handling ===
 void processInput(GLFWwindow *window) {
@@ -83,44 +85,27 @@ GLuint compileShader(GLenum type, const char* src) {
 
 void apply_newton_law(vector<PlanetProperties> &planets)
 {
-    PlanetProperties *A, *B;
-    glm::vec3 Force;
-    float MA, MB, dist;
-    const float G = 6.673e-2;
-    for(int i = 0; i < planets.size(); i++){
-        A = &planets[i];
-        for(int j = i + 1; j < planets.size(); j++){
-            // B = &planets[j];
-            // MA = A->get_mass();
-            // MB = B->get_mass();
-            
+    //ici on va utiliser l'algo de velocity verlet 
+    PlanetProperties p1 = planets[0];
+    PlanetProperties p2 = planets[1];
+    //calculating new positions
+    glm::vec3 r1_next = p1.get_position() + p1.get_velocity() + 0.5f * (p1.get_acceleration())  ;
+    p1.set_position(r1_next);
+    glm::vec3 r2_next = p2.get_position() + p2.get_velocity() + 0.5f * p2.get_acceleration();
+    p2.set_position(r2_next);
+    //calculating new accelerations
+    glm::vec3 a1_new = G*p2.get_mass()*p1.distance(p2)*(p2.get_position()-p1.get_position());
+    glm::vec3 a2_new = G*p1.get_mass()*p2.distance(p1)*(p1.get_position()-p2.get_position());
+    //calculating new velocities 
+    glm::vec3 v1_new=p1.get_velocity()+0.5f *(p1.get_acceleration()+a1_new);
+    p1.set_velocity(v1_new);
+    glm::vec3 v2_new=p2.get_velocity()+0.5f *(p2.get_acceleration()+a2_new);
+    p2.set_velocity(v2_new);
+    //updating acceleration 
+    p1.set_acceleration(a1_new);
+    p2.set_acceleration(a2_new);
 
-            // glm::vec3 dir = B->get_position() - A->get_position();
-            // float dist = glm::length(dir);
-            // if (dist < 0.000001f) continue;
-            // glm::vec3 norm = dir / dist;
-
-            // float F_scal = (G * MA * MB) / (dist * dist);
-            // glm::vec3 F = norm * F_scal;
-
-            // A->accumulateForce(F);
-            // B->accumulateForce(-F);
-
-            B = &planets[j];
-            Force = A->apply_newton_law(*B);
-            A->accumulateForce(-Force);
-            B->accumulateForce(+Force);
-
-        }
-    }
-
-    for (auto &itr : planets) {
-        itr.update(deltaTime);
-    }
-
-
-
-
+   
 }
 int main() {
     // === Init GLFW ===
@@ -164,24 +149,27 @@ int main() {
     std::vector<PlanetProperties> planets;
 
     PlanetProperties p1(glm::vec3(-0.5f, 0.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
-                        "P1");
+                        glm::vec3(0.04,0,0),
+                        glm::vec3(0,0,0), 1.0f, 0.01f, glm::vec3(0,0,0),
+                        "P1"); //i gave it a speed
     
     PlanetProperties p2(glm::vec3(0.5f, 0.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
-                        "P2");
+                        glm::vec3(0.05,0,0),
+                        glm::vec3(0,0,0), 1.0f, 0.02f, glm::vec3(0,0,0),
+                        "P2");//i gave it a speed for orbit
+    
+    //computing the acceleration of each planet comparing the the other planet
+    p1.apply_acceleration(p2);
+    p2.apply_acceleration(p1);
+
 
     planets.push_back(p1);
     planets.push_back(p2);
+    float deltaTime = 1; // our delta time is fixed to one day
 
     // === Main loop ===
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        
+       
 
         processInput(window);
 
@@ -215,8 +203,7 @@ int main() {
             glm::vec3 pos = planets[i].get_position();
             std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
         }
-        for(auto &itr : planets) itr.update(deltaTime);
-
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
