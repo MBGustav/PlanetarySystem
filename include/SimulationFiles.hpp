@@ -1,81 +1,94 @@
-// #include <iostream>
-// #include <string>
-// #include <vector>
-// #include <map>
-// #include <filesystem>
-// #include "PlanetProperties.hpp"
-// #include "PlanetJSONReader.hpp"
-// #include <set>
+#pragma once
 
-// using std::string, std::vector, std::map, std::set;
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <filesystem>
+#include "PlanetProperties.hpp"
+#include "PlanetJSONReader.hpp"
+#include <set>
+
+using std::string, std::vector, std::map, std::set;
+namespace fs = std::filesystem;
+
+#define SIMULATION_FOLDER "simulations/"
+static const string SIMULATION_PATH = string("../" + string(SIMULATION_FOLDER)); 
 
 
-// #define SIMULATION_FOLDER "simulations/"
+namespace fs = std::filesystem;
 
+// Definimos o caminho. Dica: "../" pode ser perigoso dependendo de onde você roda o executável.
+// O ideal é ser relativo ao binário ou usar caminhos absolutos em debug.
 
-// static const string RELATIVE_PATH = "../" + string(SIMULATION_FOLDER);
-
-// class SimulationFiles
-// {
-// private:
-//     string sim_filename;
-//     set<string> simulations_available; // contains names of available simulations
-
-//     // List all .json files in SIMULATION_FOLDER
-//     void loadAvailableSimulations();
-
+class SimulationFiles
+{
+    private:
+    std::string basePath;
     
-
-// public:
-//     SimulationFiles(string sim_filename);
-//     ~SimulationFiles();
+    public:
+    // Construtor define o caminho base, se não for passado usa o padrão
+    SimulationFiles(std::string path = SIMULATION_FOLDER) {
+        // Ajusta o caminho para ser relativo ao diretório anterior conforme seu código original
+        basePath = "../" + path; 
+    }
     
-//     //getter
-//     vector<string> getAvailableSimulations() const;
+    ~SimulationFiles() = default;
     
+    // Retorna apenas os nomes dos arquivos (ex: "solar_system.json")
+    std::vector<std::string> availableSimulations() const;
+    
+    // Carrega uma simulação específica baseada no nome escolhido
+    std::vector<PlanetProperties> loadSimulation(const std::string& filename) const;
+    
+    
+    
+    friend std::ostream& operator<<(std::ostream& os, const SimulationFiles& sim);
+};
 
 
-//     vector<PlanetProperties> getPlanetsfromJSONFile(const string &simulation_name);
-// };
 
-// SimulationFiles::SimulationFiles(string sim_filename)
-//     : sim_filename(sim_filename)
-// {
-//     loadAvailableSimulations();
-// }
-
-// void SimulationFiles::loadAvailableSimulations()
-// {
-//     for (const auto& entry : std::filesystem::directory_iterator(RELATIVE_PATH)) {
-//         if (entry.path().extension() == ".json") {
-//             simulations_available.insert(entry.path().filename().string());
-//         }
-//     }
-// }
-
-// vector<string> SimulationFiles::getAvailableSimulations() const
-// {
-//     return vector<string>(simulations_available.begin(), simulations_available.end());
-// }
+std::vector<std::string> SimulationFiles::availableSimulations() const {
+    std::vector<std::string> simulations;
+    
+    if (!fs::exists(SIMULATION_PATH)) {
+        std::cerr << "Diretório de simulações não existe\n";
+        return simulations;
+    }
+    
+    for (const auto& entry : fs::directory_iterator(SIMULATION_PATH)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".json") {
+            simulations.push_back(entry.path().filename().string());
+        }
+    }
+    
+    return simulations;
+}
 
 
-// vector<PlanetProperties> SimulationFiles::getPlanetsfromJSONFile(const string &simulation_name)
-// {
-//     PlanetJSONReader reader(RELATIVE_PATH + simulation_name);
-
-//     // map<string, string> jsonData = reader.readJSONFile(RELATIVE_PATH + simulation_name);
-//     // auto jsonData = reader.get_data_as_map();
-//     // vector<PlanetProperties> planets;
-//     // Assuming jsonData contains a list of planet data
-//     // Example: jsonData["planets"] is a JSON array of planet objects
-//     // You would iterate through this and create PlanetProperties objects
-//     // for (const auto& planetData : jsonData["planets"]) {
-//     //     planets.push_back(createPlanetFromJSON(planetData));
-//     // }
-//     return planets;
-// }
+std::vector<PlanetProperties> SimulationFiles::loadSimulation(const std::string& filename) const {
+    
+    fs::path fullPath = fs::path(SIMULATION_PATH) / filename;
+    
+    if (!fs::exists(fullPath)) {
+        std::cerr << "[ERROR] Sim File not found " << filename << "\n";
+        return {};
+    }
+    
+    PlanetJSONReader reader(fullPath);
+    
+    return reader.get_planets();
+}
 
 
-// SimulationFiles::~SimulationFiles()
-// {
-// }
+
+std::ostream& operator<<(std::ostream& os, const SimulationFiles& sim)
+{
+    auto simulations = sim.availableSimulations();
+    os << "Available Simulations: " << simulations.size() << "\n";
+    for (const auto& sim_name : simulations) {
+        os << "  - " << sim_name << "\n";
+
+    }
+    return os;
+}

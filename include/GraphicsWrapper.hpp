@@ -252,7 +252,7 @@ namespace graphics {
                 1, GL_FALSE, &view[0][0]);
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"projection"),
                 1, GL_FALSE, &projection[0][0]);
-                
+                glm::vec3 color;
                 for (const auto& p : planets) {
                     
                     sys_logger.debug("Rendering Planet at Position: (" + 
@@ -267,8 +267,9 @@ namespace graphics {
                     glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"model"),
                     1, GL_FALSE, &model[0][0]);
                     
-                    glUniform3f(glGetUniformLocation(shaderProgram,"color"),
-                    0.2f, 0.6f, 1.0f);
+                    // Color implementation
+                    color = p.get_color();
+                    glUniform3fv(glGetUniformLocation(shaderProgram,"color"), 1, &color[0]); 
                     
                     glDrawArrays(GL_TRIANGLES, 0, 36);
                 }

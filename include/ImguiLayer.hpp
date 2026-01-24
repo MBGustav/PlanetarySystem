@@ -14,6 +14,8 @@
 #include "SimulationWrapper.hpp"
 #include "Logger.hpp"
 
+#include "SimulationFiles.hpp"
+
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section, void* user_data);
 extern ImGuiDemoMarkerCallback      GImGuiDemoMarkerCallback;
 extern void*                        GImGuiDemoMarkerCallbackUserData;
@@ -23,6 +25,15 @@ void*                               GImGuiDemoMarkerCallbackUserData = NULL;
 
 // Graphic & UI Includes
 // NOTE: Ensure these files exist in your include path
+
+
+// To read the files from archives
+struct SimFileInfo {
+    std::string filename;
+    std::string fullPath;
+    int bodyCount;
+};
+
 
 namespace gui
 {
@@ -38,7 +49,7 @@ namespace gui
     static float MAX_MASS = 50.0f;
     
     static float MIN_TIMESCALE = 01.0f;
-    static float MAX_TIMESCALE = 10.0f;
+    static float MAX_TIMESCALE = 50.0f;
     
     
     // Persistent Data for Window Managing
@@ -63,7 +74,7 @@ namespace gui
     enum Options
     {
         SIMPLE_SIMULATION,
-        SOLAR_SIMULATION,
+        IMPORT_SIMULATION,
         REAL_TIME_SIMULATION,
         CONFIGURE_SETTINGS
     };
@@ -76,15 +87,23 @@ namespace gui
         ImGuiWindowData WMData;
         graphics::GraphicsWrapper *gfx; // Reference to GraphicsWrapper
         SimulationWrapper *simulation;// reference to simulation
+
+        SimulationFiles SimFiles;
+
+        void load_simulation();
+
         // Private helper functions for drawing specific windows
         void WelcomeWindow();
         void ConfigurationWindow(bool *page_open);
         void SimulationWindow();
+
         public:
         
+        ImguiLayer() = default;
+
         //constructor
         ImguiLayer(graphics::GraphicsWrapper &graphics, SimulationWrapper &simulation);
-        ImguiLayer(){};
+        // ImguiLayer(){};
         ~ImguiLayer();
         
         void setup();
@@ -105,7 +124,7 @@ namespace gui
     // Marked inline because they are implemented in a .hpp file
     
     inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper &graphics, SimulationWrapper &simulation): 
-    simulation(&simulation), gfx(&graphics){
+    simulation(&simulation), gfx(&graphics), SimFiles(""){
         sys_logger.debug("ImguiLayer constructor called");
     }
     
@@ -247,9 +266,8 @@ namespace gui
             ImGui::Spacing();
             
             ImGui::Text("Choose a simulation mode:");
-            ImGui::RadioButton("Simple Simulation", (int*)&selectedOption, SIMPLE_SIMULATION);
-            ImGui::RadioButton("Solar Simulation", (int*)&selectedOption, SOLAR_SIMULATION);
-            ImGui::RadioButton("Real Time Simulation", (int*)&selectedOption, REAL_TIME_SIMULATION);
+            ImGui::RadioButton("Blank Simulation", (int*)&selectedOption, SIMPLE_SIMULATION);
+            ImGui::RadioButton("Solar Simulation", (int*)&selectedOption, IMPORT_SIMULATION);
             ImGui::RadioButton("Config Setting", (int*)&selectedOption, CONFIGURE_SETTINGS);
             
             ImGui::Spacing();
@@ -258,7 +276,7 @@ namespace gui
             if (ImGui::Button("Start / Open")) {
                 switch (selectedOption)
                 {
-                    case SOLAR_SIMULATION:
+                    case IMPORT_SIMULATION:
                     WMData.ImportSimData_example = true;
                     WMData.ShowSimulationWindow = true;
                     
@@ -268,11 +286,11 @@ namespace gui
                     WMData.ShowSimulationWindow = true;
                     WMData.ShowWelcomeWindow = false;
                     break;
-                    case REAL_TIME_SIMULATION:
-                    WMData.ImportSimData_gpredict = true;
-                    WMData.ShowSimulationWindow = true;
-                    WMData.ShowWelcomeWindow = false;
-                    break;
+                    // case REAL_TIME_SIMULATION:
+                    // WMData.ImportSimData_gpredict = true;
+                    // WMData.ShowSimulationWindow = true;
+                    // WMData.ShowWelcomeWindow = false;
+                    // break;
                     case CONFIGURE_SETTINGS:
                     WMData.ShowConfigurationWindow = true;
                     break;
@@ -435,8 +453,8 @@ namespace gui
             {
                 if (ImGui::BeginMenu("Simulation"))
                 {
-                    if (ImGui::MenuItem("Restart")) { /* Add restart logic */ }
-                    if (ImGui::MenuItem("Export Data")) { /* Add export logic */ }
+                    if (ImGui::MenuItem("Restart")) { simulation->reset_simulation();}
+                    if (ImGui::MenuItem("Import Simultation")) { /* Add export logic */ }
                     ImGui::Separator();
                     if (ImGui::MenuItem("Close")) { 
                         WMData.ShowSimulationWindow = false; 
@@ -470,6 +488,7 @@ namespace gui
                 if (ImGui::Button("RESET", ImVec2(80, 30))) {
                     timeScale = 1.0f;
                     isPaused = true;
+                    simulation->reset_simulation();
                 }
                 
                 ImGui::Spacing();
@@ -514,12 +533,13 @@ namespace gui
                 ImGui::Text("System Status");
                 
                 // Read-only text
-                ImGui::Text("Objects: %d", simulation->getPlanetCount());
-                ImGui::Text("delta-time: %.4f", isPaused ? 0.0f : simulation->getDeltaTime());
-                
                 ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
                 if (isPaused) ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: PAUSED");
                 else          ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: RUNNING");
+                
+                ImGui::Text("Objects: %d", simulation->getPlanetCount());
+                ImGui::Text("delta-time: %.4f", isPaused ? 0.0f : simulation->getDeltaTime());
+                
             }
             ImGui::EndChild();
             

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <map>
 #include <fstream>
@@ -31,6 +33,7 @@ public:
     
 private:
     // Converte string de array para vector<double>
+
     static std::vector<double> parse_array(const std::string &str) {
         std::vector<double> result;
         std::stringstream ss(str);
@@ -101,7 +104,8 @@ private:
         
         return planet;
     }
-    
+
+    public:
     static std::vector<PlanetProperties> parse_planets_array(const std::string &array_str) {
         std::vector<PlanetProperties> planets;
         int brace_count = 0;

@@ -7,7 +7,7 @@
 using std::vector ;
 // TODO: add templated format ie. float, double, int ...
 
-static float G_CONSTANT = 1.0f;
+static float G_CONSTANT = 2.0f;
 class Planet
 {
     private:
@@ -81,13 +81,10 @@ class Planet
     void update(float dt);
     
     void accumulateForce(const glm::vec3& force);
-    // void apply_acceleration(const glm::vec3& force);
     
     float distance(const Planet &OtherPlanet) const;
-    // bool check_colision(const Planet &OtherPlanet);
     
     glm::vec3 apply_newton_law(const Planet &OtherPlanet);
-    // void elastic_colision(Planet &OtherPlanet);
     
     ~Planet();
 };
@@ -98,11 +95,8 @@ mass(mass), radius(radius), fix_position(fix_position) {}
 
 void Planet::update(float dt) {
     
-    if (dt <= 0.0f || fix_position) return;
-    
-    
-    // apply_acceleration(force/10.0f);
-    
+    if (dt <= 0.00001f) return;
+        
     acceleration = force / mass;
     
     
@@ -128,7 +122,6 @@ float Planet::distance(const Planet &OtherPlanet) const{
 
 glm::vec3 Planet::apply_newton_law(const Planet &OtherPlanet)
 {
-    
     glm::vec3 dir = OtherPlanet.get_position() - get_position();
     float eps = 0.01f; // suavização
     float dist2 = glm::dot(dir, dir) + eps * eps;
