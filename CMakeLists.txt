@@ -92,12 +92,18 @@ target_link_libraries(CorpSimulation PRIVATE
     common_libs
 )
 
-add_executable(imgui_glad_cube "${SAMPLES_DIR}/imgui_glad_cube.cpp")
-target_link_libraries(imgui_glad_cube PRIVATE 
-    common_libs
-    glad
-    glfw
-    imgui
-    glm::glm
-    SDL2::SDL2 
-)
+# TwoBodyProblem sample
+add_executable(TwoBodyProblem "${SAMPLES_DIR}/TwoBodyProblem.cpp")
+target_link_libraries(TwoBodyProblem PRIVATE common_libs)
+
+# Solar System sample
+add_executable(SolarSystem "${SAMPLES_DIR}/SolarSystem.cpp")
+target_link_libraries(SolarSystem PRIVATE common_libs)
+
+# NBodyProblem sample
+add_executable(NBodyProblem "${SAMPLES_DIR}/NBodyProblem.cpp")
+target_link_libraries(NBodyProblem PRIVATE common_libs)
+
+# solsys sample
+add_executable(solsys "${SAMPLES_DIR}/solsys.cpp")
+target_link_libraries(solsys PRIVATE common_libs)

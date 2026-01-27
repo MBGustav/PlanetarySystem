@@ -63,14 +63,14 @@ inline void Application::setup()
 
     PlanetProperties marsProps;
     marsProps.set_position({0.5f, 0.5f, 0.5f});
-    marsProps.set_velocity({0.0f, 0.00f, 0.0f});
-    marsProps.set_radius(0.3f);
+    marsProps.set_velocity({1.0f, 0.00f, 0.0f});
+    marsProps.set_radius(0.5f);
     marsProps.set_mass(5.0f);
     marsProps.set_color({1.0f, 0.0f, 3.0f});
 
 
     simWrapper.addPlanet(earthProps);
-    // simWrapper.addPlanet(marsProps);
+    simWrapper.addPlanet(marsProps);
 
     sys_logger.debug("Total planets in simulation: " + std::to_string(simWrapper.getPlanetCount()));
 }   
@@ -100,6 +100,12 @@ void Application::run()
         
         sys_logger.debug("Rendering Framebuffer");
         gfx.RenderToFramebuffer(simWrapper.getPlanets());
+
+        //changing planets positions
+        std::vector<PlanetProperties> planets= simWrapper.getPlanets();
+        for (std::vector<PlanetProperties>::iterator planet=planets.begin();planet!=planets.end();planet++){
+            (*planet).set_position((*planet).get_position()+0.5f);
+        }
 
         
         // 2. Start Frame
