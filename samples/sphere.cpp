@@ -118,8 +118,8 @@ int main() {
     glEnableVertexAttribArray(0);
 
     // ================= PLANETS =================
-    CelestialObjectProperties<float> p1({0,0,0},{0,0,0},{0,0,0},0.1f,0.01f,{1,0,0},"P1");
-    CelestialObjectProperties<float> p2({0,0,0},{0,0,0},{0,0,0},0.1f,0.01f,{0,0,1},"P2");
+    CelestialObjectProperties<float> p1({0,0,0},{0,0,0},{0,0,0},0.1f,0.01f,{1.0f, 0.8f, 0.2f},"P1");
+    CelestialObjectProperties<float> p2({0,0,0},{0,0,0},{0,0,0},0.1f,0.01f,{0.4f, 0.8f, 0.8f},"P2");
 
     init_elliptical_orbit_visviva(p1,p2,2.0f,0.7f);
 

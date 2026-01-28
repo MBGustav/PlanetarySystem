@@ -118,59 +118,35 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    //creating planets
+    //creating planets 
     
-    CelestialObjectProperties<float> sun(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                     0.00465f, 1.0f, glm::vec3(1,0.5,0), "Sun"); // radius, mass
+        // ---- Planets ----
+    vector<CelestialObjectProperties<float>> planets = {
+        { {0,0,0}, {0,0,0}, {0,0,0}, 00.00465f, 1.0f, {1.0f, 0.8f, 0.2f}, "Sun" },
 
-    CelestialObjectProperties<float> mercury(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                            1.63e-5f, 1.66e-7f, glm::vec3(0.5,0.5,0.5), "Mercury");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 1.63e-5f, 1.66e-7f,  {0.5f, 0.5f, 0.5f},  "Mercury" },
 
-    CelestialObjectProperties<float> venus(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                        4.05e-5f, 2.45e-6f, glm::vec3(1,0.8,0.2), "Venus");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 4.05e-5f, 2.45e-6f,  {0.9f, 0.8f, 0.5f},  "Venus"   },
 
-    CelestialObjectProperties<float> earth(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                            4.26e-5f, 3.0e-6f, glm::vec3(0,0.5,1), "Earth");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 4.26e-5f, 3.0e-6f,   {0.2f, 0.5f, 1.0f},  "Earth"   },
 
-    CelestialObjectProperties<float> mars(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                        2.27e-5f, 3.21e-7f, glm::vec3(1,0,0), "Mars");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 2.27e-5f, 3.21e-7f,  {0.8f, 0.3f, 0.2f},  "Mars"    },
 
-    CelestialObjectProperties<float> jupiter(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                            0.000285f, 9.55e-4f, glm::vec3(1,0.5,0), "Jupiter");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000285f, 9.55e-4f,{0.9f, 0.6f, 0.3f},  "Jupiter" },
 
-    CelestialObjectProperties<float> saturn(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                            0.000241f, 2.86e-4f, glm::vec3(1,1,0), "Saturn");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000241f, 2.86e-4f,{0.9f, 0.8f, 0.6f},  "Saturn"  },
 
-    CelestialObjectProperties<float> uranus(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                            0.000103f, 4.37e-5f, glm::vec3(0,1,1), "Uranus");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000103f, 4.37e-5f,{0.4f, 0.8f, 0.8f},  "Uranus"  },
 
-    CelestialObjectProperties<float> neptune(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
-                            0.000100f, 5.15e-5f, glm::vec3(0,0,1), "Neptune");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000100f, 5.15e-5f,{0.2f, 0.3f, 0.9f},  "Neptune" }
+        };
 
 
-    //initializing the orbit of each planet
-    init_elliptical_orbit_visviva(sun, mercury, 0.387f, 0.205f);
-    init_elliptical_orbit_visviva(sun, venus,   0.723f, 0.007f);
-    init_elliptical_orbit_visviva(sun, earth,   1.0f,   0.017f);
-    init_elliptical_orbit_visviva(sun, mars,    1.524f, 0.093f);
-    init_elliptical_orbit_visviva(sun, jupiter, 5.203f, 0.048f);
-    init_elliptical_orbit_visviva(sun, saturn,  9.537f, 0.056f);
-    init_elliptical_orbit_visviva(sun, uranus, 19.191f, 0.046f);
-    init_elliptical_orbit_visviva(sun, neptune, 30.07f, 0.010f);
+    float a[] = {0,0.387f,0.723f,1.0f,1.524f,5.203f,9.537f,19.191f,30.07f};
+    float e[] = {0,0.205f,0.007f,0.017f,0.093f,0.048f,0.056f,0.046f,0.010f};
 
-    std::vector<CelestialObjectProperties<float>> planets = {
-        sun, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune
-    };
-
-
-    std::vector<CelestialObjectProperties<float>> planet1 = {sun, mercury};
-    std::vector<CelestialObjectProperties<float>> planet2 = {sun, venus};
-    std::vector<CelestialObjectProperties<float>> planet3 = {sun, earth};
-    std::vector<CelestialObjectProperties<float>> planet4 = {sun, mars};
-    std::vector<CelestialObjectProperties<float>> planet5 = {sun, jupiter};
-    std::vector<CelestialObjectProperties<float>> planet6 = {sun, saturn};
-    std::vector<CelestialObjectProperties<float>> planet7 = {sun, uranus};
-    std::vector<CelestialObjectProperties<float>> planet8 = {sun, neptune};
+    for (size_t i = 1; i < planets.size(); ++i)
+        init_elliptical_orbit_visviva(planets[0], planets[i], a[i], e[i]);
 
     //initializing the acceleration of each planet
     compute_accelerations(planets);
@@ -202,111 +178,16 @@ int main() {
         //Update position of each planet (we neglet the influenece of planets on each other 
         //since the sun has the biggest influence)
 
-        velocity_verlet(planet1);
-        velocity_verlet(planet2);
-        velocity_verlet(planet3);
-        velocity_verlet(planet4);
-        velocity_verlet(planet5);
-        velocity_verlet(planet6);
-        velocity_verlet(planet7);
-        velocity_verlet(planet8);
-
+        velocity_verlet(planets);
 
         //we draw the planets
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet1[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
+        for (auto& p : planets) {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), p.get_position());
+            model = glm::scale(model, glm::vec3(0.5)); // scale for visibility
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
+            glUniform3fv(glGetUniformLocation(shaderProgram,"color"),1,&p.get_color()[0]);
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet1[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
-        }
-        
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet2[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet2[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
-        }
-
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet3[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet3[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
-        }
-        
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet4[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet4[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
-        }
-        
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet5[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet5[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
-        }
-
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet6[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet6[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
-        }
-        
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet7[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet7[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
-        }
-
-        for (int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planet8[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planet8[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
         }
 
         glfwSwapBuffers(window);
