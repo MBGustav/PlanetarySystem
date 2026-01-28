@@ -25,25 +25,37 @@ class SimulationWrapper
     float accumulator = 0.0f;
     const float FIXED_DT = 0.005f; // 5ms (precisão alta para órbitas estáveis)
     
-    
+    // Safety check
     bool bound_check(size_t index){return index < planets.size() && index >= 0;}
+
     
     public:
+    
+
+    // Constructors / Destructors 
     SimulationWrapper(float delta_time = 0.01f);
     ~SimulationWrapper();
     
-    void StepPhysics(float deltatime);
+    // Configurations
     bool addPlanet(const PlanetProperties& planet);
     size_t getPlanetCount() const;
+    void setInitialState(std::vector<PlanetProperties> v_planets, bool reset_simulation = true);
+
+    PlanetProperties & PlanetByIdx(size_t item);
+    // Copy
     const std::vector<PlanetProperties>& getPlanets() const;
     const std::vector<PlanetProperties>& getcopyPlanets() const;
     const std::vector<PlanetProperties>& getPlanetProperties() const { return planets; }
+
+    // Physics
+    void StepPhysics(float deltatime);
     void UpdateSimulation(float frameTime, float speedMultiplier = 1.0f);
     
+    // UI controls
     void save_state();
     void reset_simulation();
 
-
+    
 
 
     void setDeltaTime(float dt) { 
@@ -85,6 +97,25 @@ class SimulationWrapper
     
 };
 
+PlanetProperties& SimulationWrapper::PlanetByIdx(size_t item)
+{
+    if(bound_check(item))
+        sys_logger.error("Item selected out of bounds!");
+    
+
+    return  planets[item];
+}
+
+void SimulationWrapper::setInitialState(std::vector<PlanetProperties> v_planets, bool reset_simulation)
+{
+
+
+    InitialState = v_planets;
+
+    if(reset_simulation)
+        this->reset_simulation();
+
+}
 SimulationWrapper::SimulationWrapper(float delta_time) : delta_time(delta_time)
 {
     planets.clear();
@@ -112,11 +143,11 @@ bool SimulationWrapper::addPlanet(const PlanetProperties& planet)
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
-        // TO-DO: insert logging por windowViewer
+        sys_logger.error(e.what());
         return false;
     }
-    // TO-DO: insert logging por windowViewer
+    
+    sys_logger.simulation("added Planet" + planet.get_name());
     return true;
 }
 

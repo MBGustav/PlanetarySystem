@@ -52,7 +52,7 @@ std::vector<std::string> SimulationFiles::availableSimulations() const {
     std::vector<std::string> simulations;
     
     if (!fs::exists(SIMULATION_PATH)) {
-        std::cerr << "Diretório de simulações não existe\n";
+        sys_logger.error("File directory not found!");
         return simulations;
     }
     
@@ -71,7 +71,7 @@ std::vector<PlanetProperties> SimulationFiles::loadSimulation(const std::string&
     fs::path fullPath = fs::path(SIMULATION_PATH) / filename;
     
     if (!fs::exists(fullPath)) {
-        std::cerr << "[ERROR] Sim File not found " << filename << "\n";
+        sys_logger.error("File directory not found!");
         return {};
     }
     

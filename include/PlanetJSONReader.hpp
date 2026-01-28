@@ -22,18 +22,18 @@ public:
         return planets;
     }
     
-    // Lê o JSON e popula o vetor planets
+    // Reads the JSON and populates the planets vector
+
     void parse_planets() {
         auto it = data_map.find("planets");
         if (it != data_map.end()) {
-            // A string no mapa contém o array bruto JSON. Convertê-lo agora:
+            // The string in the map contains the raw JSON array. Convert it now:
             planets = parse_planets_array(it->second);
         }
     }
     
 private:
-    // Converte string de array para vector<double>
-
+    // Convert string representation of array to vector<double>
     static std::vector<double> parse_array(const std::string &str) {
         std::vector<double> result;
         std::stringstream ss(str);
@@ -92,15 +92,14 @@ private:
             }
         }
         
+
         // Popula o objeto PlanetProperties
         if(temp_map.count("name"))     planet.set_name(temp_map["name"]);
         if(temp_map.count("mass"))     planet.set_mass(std::stod(temp_map["mass"]));
         if(temp_map.count("radius"))   planet.set_radius(std::stod(temp_map["radius"]));
+        if(temp_map.count("color"))    planet.set_color(parse_array(temp_map["color"]));
         if(temp_map.count("position")) planet.set_position(parse_array(temp_map["position"]));
         if(temp_map.count("velocity")) planet.set_velocity(parse_array(temp_map["velocity"]));
-        
-        // Fix it
-        // if(temp_map.count("color")) planet.set_color(temp_map["color"]);
         
         return planet;
     }

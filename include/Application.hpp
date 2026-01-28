@@ -54,43 +54,6 @@ inline void Application::setup()
     // Simulation Windows must comunicate with layer
     
     // Create some default planets for testing
-    
-    PlanetProperties JupyterProps, earthProps, marsProps;
-
-
-    
-
-    earthProps.set_position(glm::vec3(0.0132604844f, 0.0f, 0.0f));
-    earthProps.set_velocity(glm::vec3(0.0f, 1.054151921f, 0.0f));
-    earthProps.set_color(glm::vec3(255.0f, 0.0f, 255.0f)/255.0f);
-    earthProps.set_radius(1.0f);
-    earthProps.set_mass(1.0f);
-    earthProps.set_name("Corp 1");
-    earthProps.set_fixed(false);
-
-    marsProps.set_position(glm::vec3(1.4157286016f, 0.0f, 0.0f));
-    marsProps.set_velocity(glm::vec3(0.0f, -0.2101466639f,0.0f));
-    marsProps.set_radius(1.0f);
-    marsProps.set_mass(1.0f);
-    marsProps.set_color(glm::vec3(1.0f, 0.0f, 255.0f)/255.0f);
-    marsProps.set_name("Corp 2");
-    marsProps.set_fixed(false);
-
-    // PlanetProperties JupyterProps;
-    JupyterProps.set_position(glm::vec3(-1.4289890859f, 0.0f, 0.0f));
-    JupyterProps.set_velocity(glm::vec3(0.0f, -0.8440052572f,0.0f));
-    JupyterProps.set_radius(1.0f);
-    JupyterProps.set_mass(1.0f);
-    JupyterProps.set_color(glm::vec3(255.0f, 255.0f, 0.0f)/255.0f);
-    JupyterProps.set_name("Corp 3");
-    JupyterProps.set_fixed(false);
-
-    // simWrapper.addPlanet(JupyterProps);
-    simWrapper.addPlanet(JupyterProps);
-    simWrapper.addPlanet(earthProps);
-    simWrapper.addPlanet(marsProps);
-    simWrapper.save_state();
-    sys_logger.debug("Total planets in simulation: " + std::to_string(simWrapper.getPlanetCount()));
 }   
 
 inline Application::Application()
