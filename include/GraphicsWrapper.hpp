@@ -189,7 +189,7 @@ namespace graphics {
         }
         
         
-        void RenderPlanets(const std::vector<PlanetProperties> planets,
+        void RenderPlanets(const std::vector<CelestialObjectProperties<float>> planets,
             float viewportWidth,
             float viewportHeight)
             {
@@ -247,7 +247,7 @@ namespace graphics {
                 glUseProgram(0);
             }
             
-            void RenderToFramebuffer(const std::vector<PlanetProperties>& planets)
+            void RenderToFramebuffer(const std::vector<CelestialObjectProperties<float>>& planets)
             {
                 if (framebuffer == 0) {
                     std::cerr << "Framebuffer not initialized\n";

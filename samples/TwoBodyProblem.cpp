@@ -118,19 +118,19 @@ int main() {
     glEnableVertexAttribArray(0);
 
     
-    PlanetProperties p1(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
+    CelestialObjectProperties<float> p1(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
                     0.1f, 1.0f, glm::vec3(1,0,0), "P1");
 
-    PlanetProperties p2(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
+    CelestialObjectProperties<float> p2(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f),
                         0.5f, 0.4f, glm::vec3(0,1,0), "P2");
 
     // Semi-major axis and eccentricity
-    float a = 7.0f;   // AU
+    float a = 7.0f;   // in AU
     float e = 0.9f;   // elliptical orbit
 
     init_elliptical_orbit_visviva(p1, p2, a, e);
 
-    std::vector<PlanetProperties> planets = {p1, p2};
+    std::vector<CelestialObjectProperties<float>> planets = {p1, p2};
 
 
 
@@ -157,7 +157,6 @@ int main() {
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
 
         //Update position of each planet
-        //apply_newton_law(planets);
         velocity_verlet(planets);
 
 

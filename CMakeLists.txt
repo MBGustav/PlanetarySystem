@@ -81,29 +81,33 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 ########################################################
 set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
 
-add_executable(imgui_sample "${SAMPLES_DIR}/imgui_sample.cpp")
-target_link_libraries(imgui_sample PRIVATE 
-    common_libs
-)
+#add_executable(imgui_sample "${SAMPLES_DIR}/imgui_sample.cpp")
+#target_link_libraries(imgui_sample PRIVATE 
+ #   common_libs
+#)
 
 
-add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
-target_link_libraries(CorpSimulation PRIVATE 
-    common_libs
-)
+#add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
+#target_link_libraries(CorpSimulation PRIVATE 
+ #   common_libs
+#)
 
 # TwoBodyProblem sample
 add_executable(TwoBodyProblem "${SAMPLES_DIR}/TwoBodyProblem.cpp")
 target_link_libraries(TwoBodyProblem PRIVATE common_libs)
 
-# Solar System sample
+# NBodyProblem sample
+#add_executable(NBodyProblem "${SAMPLES_DIR}/NBodyProblem.cpp")
+#target_link_libraries(NBodyProblem PRIVATE common_libs)
+
+# SolarSystem sample
 add_executable(SolarSystem "${SAMPLES_DIR}/SolarSystem.cpp")
 target_link_libraries(SolarSystem PRIVATE common_libs)
 
-# NBodyProblem sample
-add_executable(NBodyProblem "${SAMPLES_DIR}/NBodyProblem.cpp")
-target_link_libraries(NBodyProblem PRIVATE common_libs)
+# sphere sample
+add_executable(sphere "${SAMPLES_DIR}/sphere.cpp")
+target_link_libraries(sphere PRIVATE common_libs)
 
-# solsys sample
-add_executable(solsys "${SAMPLES_DIR}/solsys.cpp")
-target_link_libraries(solsys PRIVATE common_libs)
+# sphericalsolsys sample
+add_executable(sphericalsolsys "${SAMPLES_DIR}/sphericalsolsys.cpp")
+target_link_libraries(sphericalsolsys PRIVATE common_libs)
