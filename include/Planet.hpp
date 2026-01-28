@@ -7,7 +7,7 @@ template<typename T>
 static constexpr T G_CONSTANT = static_cast<T>(2.96e-4);
 
 template<typename T>
-class CelestialObject
+class Planet
 {
 private:
     glm::tvec3<T> position;
@@ -20,7 +20,7 @@ private:
 
 public:
     // Constructor
-    CelestialObject(
+    Planet(
         const glm::tvec3<T>& position,
         const glm::tvec3<T>& velocity,
         const glm::tvec3<T>& acceleration,
@@ -45,12 +45,12 @@ public:
     void set_mass(T mass)                                     { this->mass = mass; }
     void set_radius(T radius)                                 { this->radius = radius; }
 
-    ~CelestialObject() = default;
+    ~Planet() = default;
 };
 
 // Constructor implementation
 template<typename T>
-CelestialObject<T>::CelestialObject(
+Planet<T>::Planet(
     const glm::tvec3<T>& position,
     const glm::tvec3<T>& velocity,
     const glm::tvec3<T>& acceleration,
