@@ -6,16 +6,19 @@
 #include <vector>
 #include <PlanetProperties.hpp>
 #include <vector>
+#include <Physics.hpp>
 
 using std::vector;
 
 // === Camera variables ===
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 5.0f);
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 60.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
-float deltaTime = 0.0f;
+float deltaTime = 1; // our delta time is fixed to one day
 float lastFrame = 0.0f;
+//static float G = 2.96e-4;
+
 
 // === Input handling ===
 void processInput(GLFWwindow *window) {
@@ -81,47 +84,7 @@ GLuint compileShader(GLenum type, const char* src) {
     return shader;
 }
 
-void apply_newton_law(vector<PlanetProperties<float>> &planets)
-{
-    PlanetProperties<float> *A, *B;
-    glm::vec3 Force;
-    float MA, MB, dist;
-    const float G = 6.673e-2;
-    for(int i = 0; i < planets.size(); i++){
-        A = &planets[i];
-        for(int j = i + 1; j < planets.size(); j++){
-            // B = &planets[j];
-            // MA = A->get_mass();
-            // MB = B->get_mass();
-            
 
-            // glm::vec3 dir = B->get_position() - A->get_position();
-            // float dist = glm::length(dir);
-            // if (dist < 0.000001f) continue;
-            // glm::vec3 norm = dir / dist;
-
-            // float F_scal = (G * MA * MB) / (dist * dist);
-            // glm::vec3 F = norm * F_scal;
-
-            // A->accumulateForce(F);
-            // B->accumulateForce(-F);
-
-            B = &planets[j];
-            Force = A->apply_newton_law(*B);
-            A->accumulateForce(+Force);
-            B->accumulateForce(-Force);
-
-        }
-    }
-
-    for (auto &itr : planets) {
-        itr.update(deltaTime);
-    }
-
-
-
-
-}
 int main() {
     // === Init GLFW ===
     glfwInit();
@@ -129,7 +92,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Two Planets", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, " Solar System", NULL, NULL);
     if (!window) { std::cerr << "Failed to create window\n"; glfwTerminate(); return -1; }
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -155,39 +118,46 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // === Positions of the two planets ===
-    // glm::vec3 planetPositions[] = {
-    //     glm::vec3(-1.5f, 0.0f, 0.0f),
-    //     glm::vec3( 1.5f, 0.0f, 0.0f)
-    // };
-
-    std::vector<PlanetProperties> planets;
-
-    PlanetProperties p1(glm::vec3(-0.5f, 0.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
-                        "P1");
+    //creating planets 
     
-    PlanetProperties p2(glm::vec3(0.5f, 0.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
-                        "P2");
+        // ---- Planets ----
+    vector<PlanetProperties<float>> planets = {
+        { {0,0,0}, {0,0,0}, {0,0,0}, 00.00465f, 1.0f, {1.0f, 0.8f, 0.2f}, "Sun" },
 
-    PlanetProperties p3(glm::vec3(1.0f, 3.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 10.0f, glm::vec3(0,0,0),
-                        "P");
+        { {0,0,0}, {0,0,0}, {0,0,0}, 1.63e-5f, 1.66e-7f,  {0.5f, 0.5f, 0.5f},  "Mercury" },
 
-    planets.push_back(p1);
-    planets.push_back(p2);
-    planets.push_back(p3);
+        { {0,0,0}, {0,0,0}, {0,0,0}, 4.05e-5f, 2.45e-6f,  {0.9f, 0.8f, 0.5f},  "Venus"   },
+
+        { {0,0,0}, {0,0,0}, {0,0,0}, 4.26e-5f, 3.0e-6f,   {0.2f, 0.5f, 1.0f},  "Earth"   },
+
+        { {0,0,0}, {0,0,0}, {0,0,0}, 2.27e-5f, 3.21e-7f,  {0.8f, 0.3f, 0.2f},  "Mars"    },
+
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000285f, 9.55e-4f,{0.9f, 0.6f, 0.3f},  "Jupiter" },
+
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000241f, 2.86e-4f,{0.9f, 0.8f, 0.6f},  "Saturn"  },
+
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000103f, 4.37e-5f,{0.4f, 0.8f, 0.8f},  "Uranus"  },
+
+        { {0,0,0}, {0,0,0}, {0,0,0}, 0.000100f, 5.15e-5f,{0.2f, 0.3f, 0.9f},  "Neptune" }
+        };
+
+
+    float a[] = {0,0.387f,0.723f,1.0f,1.524f,5.203f,9.537f,19.191f,30.07f};
+    float e[] = {0,0.205f,0.007f,0.017f,0.093f,0.048f,0.056f,0.046f,0.010f};
+
+    for (size_t i = 1; i < planets.size(); ++i)
+        init_elliptical_orbit_visviva(planets[0], planets[i], a[i], e[i]);
+
+    //initializing the acceleration of each planet
+    compute_accelerations(planets);
+
+
+
+    float deltaTime = 1; // our delta time is fixed to one day
 
     // === Main loop ===
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        
+       
 
         processInput(window);
 
@@ -205,23 +175,20 @@ int main() {
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
 
-        //Update position of each planet
-        apply_newton_law(planets);
+        //Update position of each planet (we neglet the influenece of planets on each other 
+        //since the sun has the biggest influence)
 
+        velocity_verlet(planets);
 
-        // Draw both "planets"
-        for (int i = 0; i < planets.size(); i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), planets[i].get_position());
-            model = glm::scale(model, glm::vec3(0.5f));
+        //we draw the planets
+        for (auto& p : planets) {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), p.get_position());
+            model = glm::scale(model, glm::vec3(0.5)); // scale for visibility
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-            glm::vec3 color = (i == 0) ? glm::vec3(0.2f, 0.6f, 1.0f) : glm::vec3(1.0f, 0.8f, 0.2f);
-            glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, &color[0]);
+            glUniform3fv(glGetUniformLocation(shaderProgram,"color"),1,&p.get_color()[0]);
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
-            glm::vec3 pos = planets[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
         }
-        for(auto &itr : planets) itr.update(deltaTime);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -230,3 +197,7 @@ int main() {
     glfwTerminate();
     return 0;
 }
+
+
+
+    

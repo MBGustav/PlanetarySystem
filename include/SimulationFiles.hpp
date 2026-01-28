@@ -39,7 +39,7 @@ class SimulationFiles
     std::vector<std::string> availableSimulations() const;
     
     // Carrega uma simulação específica baseada no nome escolhido
-    std::vector<PlanetProperties> loadSimulation(const std::string& filename) const;
+    std::vector<PlanetProperties<float>> loadSimulation(const std::string& filename) const;
     
     
     
@@ -66,7 +66,7 @@ std::vector<std::string> SimulationFiles::availableSimulations() const {
 }
 
 
-std::vector<PlanetProperties> SimulationFiles::loadSimulation(const std::string& filename) const {
+std::vector<PlanetProperties<float>> SimulationFiles::loadSimulation(const std::string& filename) const {
     
     fs::path fullPath = fs::path(SIMULATION_PATH) / filename;
     
@@ -75,7 +75,7 @@ std::vector<PlanetProperties> SimulationFiles::loadSimulation(const std::string&
         return {};
     }
     
-    PlanetJSONReader reader(fullPath);
+    PlanetJSONReader<float> reader(fullPath);
     
     return reader.get_planets();
 }

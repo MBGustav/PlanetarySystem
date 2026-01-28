@@ -222,7 +222,7 @@ namespace graphics {
         }
         
         
-        void RenderPlanets(const std::vector<PlanetProperties> planets,
+        void RenderPlanets(const std::vector<PlanetProperties<float>> &planets,
             float viewportWidth,
             float viewportHeight)
             {
@@ -236,10 +236,10 @@ namespace graphics {
                     camera.Up
                 );
                 
-                sys_logger.debug("Camera Position: (" + std::to_string(camera.Position.x) + ", " +
-                    std::to_string(camera.Position.y) + ", " +
-                    std::to_string(camera.Position.z) + ")"
-                );
+                // sys_logger.debug("Camera Position: (" + std::to_string(camera.Position.x) + ", " +
+                //     std::to_string(camera.Position.y) + ", " +
+                //     std::to_string(camera.Position.z) + ")"
+                // );
                 
                 glm::mat4 projection = glm::perspective(
                     glm::radians(45.0f),
@@ -253,13 +253,9 @@ namespace graphics {
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"projection"),
                 1, GL_FALSE, &projection[0][0]);
                 glm::vec3 color;
+                
                 for (const auto& p : planets) {
                     
-                    sys_logger.debug("Rendering Planet at Position: (" + 
-                        std::to_string(p.get_position().x) + ", " +
-                        std::to_string(p.get_position().y) + ", " +
-                        std::to_string(p.get_position().z) + ")"
-                    );
                     
                     glm::mat4 model = glm::translate(glm::mat4(1.0f), p.get_position());
                     model = glm::scale(model, glm::vec3(p.get_radius()));
@@ -278,7 +274,7 @@ namespace graphics {
                 glUseProgram(0);
             }
             
-            void RenderToFramebuffer(const std::vector<PlanetProperties>& planets)
+            void RenderToFramebuffer(const std::vector<PlanetProperties<float>>& planets)
             {
                 if (framebuffer == 0) {
                     std::cerr << "Framebuffer not initialized\n";

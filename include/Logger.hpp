@@ -6,6 +6,10 @@
 #include <iomanip>
 #include <sstream>
 
+enum class LogLevel { DEBUG = 0, WARNING = 1, INFO = 2, SIMULATION = 3, ERROR = 4 };
+
+const LogLevel LEVEL_LOGGER = LogLevel::INFO;
+
 static const std::string  RESET       = "\033[0m"  ;
 static const std::string  BLACK       = "\033[30m" ;            /* Black */
 static const std::string  RED         = "\033[31m" ;            /* Red */
@@ -24,10 +28,22 @@ static const std::string  BOLDMAGENTA = "\033[1m\033[35m";      /* Bold Magenta 
 static const std::string  BOLDCYAN    = "\033[1m\033[36m";      /* Bold Cyan */
 static const std::string  BOLDWHITE   = "\033[1m\033[37m";      /* Bold White */
 
+std::string logLevelToString(LogLevel level) {
+    switch(level) {
+        case LogLevel::DEBUG:      return "DEBUG";
+        case LogLevel::WARNING:    return "WARNING";
+        case LogLevel::INFO:       return "INFO";
+        case LogLevel::SIMULATION: return "SIMULATION";
+        case LogLevel::ERROR:      return "ERROR";
+        default:                   return "UNKNOWN";
+    }
+}
+
 class Logger {
     private:
     std::string filename;
     bool with_time, with_date;
+    LogLevel log_level;
     
     std::stringstream simulation_buffer;  
     
@@ -46,39 +62,45 @@ class Logger {
         return std::string(color + message + RESET);
     }
 
-    void log(const std::string level, const std::string message, bool simulation = false) {
+    void log(LogLevel level_enum, const std::string message) {
+        if(level_enum < log_level) return;
+        
         std::stringstream entry;
         
         entry << getCurrentTime()
-        << "[" << level << "] "
+        << "[" << logLevelToString(level_enum) << "] "
         << message << "\n";
         
         std::cout << entry.str();                         // console
-        if(simulation) simulation_buffer << entry.str();  // buffer
+        if(level_enum == LogLevel::SIMULATION) simulation_buffer << entry.str();  // buffer
     }
     
     public:
-    Logger(const std::string& filename, bool with_time = true, bool with_date = true) : 
-    filename(filename), with_time(with_time), with_date(with_date) {}
+    Logger(const std::string& filename, bool with_time = true, bool with_date = true, LogLevel level = LogLevel::INFO) : 
+    filename(filename), with_time(with_time), with_date(with_date), log_level(level) {}
+    
+    void set_log_level(LogLevel level) {
+        log_level = level;
+    }
     
     void info(const std::string& message) {
-        log(beautify(BOLDBLUE, "INFO") , message);
+        log(LogLevel::INFO, beautify(message, BOLDBLUE));
     }
     
     void error(const std::string& message) {
-        log(beautify(BOLDRED, "ERROR"), message);
+        log(LogLevel::ERROR, beautify(message, BOLDRED));
     }
     
-    void warning(const std::string& message) {
-        log(beautify(BOLDYELLOW, "WARNING"), message);
+    void warn(const std::string& message) {
+        log(LogLevel::WARNING, beautify(message, BOLDYELLOW));
     }
     
     void debug(const std::string& message) {
-        log(beautify(BOLDWHITE, "DEBUG"), message);
+        log(LogLevel::DEBUG, beautify(message, BOLDWHITE));
     }
     
     void simulation(const std::string& message) {
-        log("SIM", message, true);
+        log(LogLevel::SIMULATION, message);
     }
 
     std::string get_log_buffer() {
@@ -87,5 +109,5 @@ class Logger {
 };
 
 
-// Glbal Logger Instance
-static Logger sys_logger("Application");
+// Global Logger Instance
+static Logger sys_logger("Application", true, true, LEVEL_LOGGER);

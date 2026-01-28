@@ -1,2 +1,2 @@
 
-#include "PlanetProperties.h"
+#include "PlanetProperties.hpp"

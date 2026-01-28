@@ -4,133 +4,69 @@
 #include <string>
 #include <vector>
 
-using std::vector ;
-// TODO: add templated format ie. float, double, int ...
+// template<typename T>
+// // static constexpr T G_CONSTANT = static_cast<T>(2.96e-4);
 
-static float G_CONSTANT = 2.0f;
+template<typename T>
 class Planet
 {
-    private:
+private:
+    glm::tvec3<T> position;
+    glm::tvec3<T> velocity;
+    glm::tvec3<T> acceleration;
+    glm::tvec3<T> color;
+
+    T mass;
+    T radius;
+    bool fixed;
+
+public:
+    // Constructor
+    Planet(
+        const glm::tvec3<T>& position,
+        const glm::tvec3<T>& velocity,
+        const glm::tvec3<T>& acceleration,
+        T radius,
+        T mass,
+        const glm::tvec3<T>& color, 
+        bool fixed = false
+    );
+
+    // Getters
+    glm::tvec3<T> get_position()     const { return position; }
+    glm::tvec3<T> get_velocity()     const { return velocity; }
+    glm::tvec3<T> get_acceleration() const { return acceleration; }
+    glm::tvec3<T> get_color()        const { return color; }
+    T get_mass()                     const { return mass; }
+    T get_radius()                   const { return radius; }
+    bool is_fixed()                  const { return fixed; }
+
     
-    glm::vec3 position;
-    glm::vec3 velocity;
-    glm::vec3 acceleration;
-    glm::vec3 force;
-    glm::vec3 color;
-    
-    float mass;
-    float radius;
-    
-    bool fix_position;
-    
-    public:
-    Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color, bool fix_position = false);
-    
-    
-    glm::vec3 get_position()     const { return position; }
-    glm::vec3 get_velocity()     const { return velocity; }
-    glm::vec3 get_acceleration() const { return acceleration; }
-    glm::vec3 get_color()        const { return color; }
-    glm::vec3 get_force()        const { return force; }
-    float     get_mass()         const { return mass; }
-    float     get_radius()       const { return radius; }
-    bool      is_fixed()         const { return fix_position; }
-    
-    
-    
-    
-    void set_position(vector<double> vec_position)           
-    { 
-        if(vec_position.size() != 3) return;
-        this->position = {vec_position[0], vec_position[1], vec_position[2]}; 
+    // Setters
+    void set_position(const glm::tvec3<T>& position)         { this->position = position; }
+    void set_velocity(const glm::tvec3<T>& velocity)         { this->velocity = velocity; }
+    void set_acceleration(const glm::tvec3<T>& acceleration) { this->acceleration = acceleration; }
+    void set_color(const glm::tvec3<T>& color)               { this->color = color; }
+    void set_mass(T mass)                                     { this->mass = mass; }
+    void set_radius(T radius)                                 { this->radius = radius; }
+    void set_fixed(bool fixed) {
+        if (fixed) {
+            this->velocity = glm::tvec3<T>(0,0,0);
+            this->acceleration = glm::tvec3<T>(0,0,0);
+        }
     }
-    
-    void set_velocity(vector<double> vec_velocity)           
-    { 
-        if(vec_velocity.size() != 3) return;
-        this->velocity = {vec_velocity[0], vec_velocity[1], vec_velocity[2]}; 
-    }
-    
-    void set_acceleration(vector<double> vec_acceleration)   
-    { 
-        if(vec_acceleration.size() != 3) return;
-        this->acceleration = {vec_acceleration[0], vec_acceleration[1], vec_acceleration[2]}; 
-    }
-    
-    void set_force(vector<double> vec_force)                 
-    { 
-        if(vec_force.size() != 3) return;
-        this->force = {vec_force[0], vec_force[1], vec_force[2]}; 
-    }
-    
-    void set_color(vector<double> vec_color)                 
-    { 
-        if(vec_color.size() != 3) return;
-        this->color = {vec_color[0], vec_color[1], vec_color[2]}; 
-    }
-    
-    void set_position(glm::vec3 position)           { this->position = position; }
-    void set_velocity(glm::vec3 velocity)           { this->velocity = velocity; }
-    void set_acceleration(glm::vec3 acceleration)   { this->acceleration = acceleration; }
-    void set_force(glm::vec3 force)                 { this->force = force; }
-    void set_color(glm::vec3 color)                 { this->color = color; }
-    void set_mass(float mass)                       { this->mass = mass; }
-    void set_radius(float radius)                   { this->radius = radius; }
-    void set_fixed(bool fix_position)               { this->fix_position = fix_position; }
-    
-    void update(float dt);
-    
-    void accumulateForce(const glm::vec3& force);
-    
-    float distance(const Planet &OtherPlanet) const;
-    
-    glm::vec3 apply_newton_law(const Planet &OtherPlanet);
-    
-    ~Planet();
+    ~Planet() = default;
 };
 
-Planet::Planet(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration, float radius, float mass, glm::vec3 color, bool fix_position):
-position(position), velocity(velocity), acceleration(acceleration), color(color),
-mass(mass), radius(radius), fix_position(fix_position) {}
-
-void Planet::update(float dt) {
-    
-    if (dt <= 0.00001f) return;
-        
-    acceleration = force / mass;
-    
-    
-    velocity += acceleration * dt;  // v = v + a*dt
-    position += velocity * dt;      // p = p + v*dt
-    // acceleration = {0,0,0};      // zero acceleration after update ?
-    glm::vec3  f = {0,0,0};
-    set_force(f);             // zero force after update
-}
-
-
-void Planet::accumulateForce(const glm::vec3& ext_force) {
-    force += ext_force;
-}
-
-
-
-float Planet::distance(const Planet &OtherPlanet) const{
-    float val  = glm::length(OtherPlanet.get_position() - this->get_position());
-    return val;
-}
-
-
-glm::vec3 Planet::apply_newton_law(const Planet &OtherPlanet)
-{
-    glm::vec3 dir = OtherPlanet.get_position() - get_position();
-    float eps = 0.01f; // suavização
-    float dist2 = glm::dot(dir, dir) + eps * eps;
-    float invDist = 1.0f / sqrt(dist2);
-    float invDist3 = invDist * invDist * invDist;
-    return G_CONSTANT * mass * OtherPlanet.get_mass() * dir * invDist3;
-}
-
-
-Planet::~Planet()
-{
-}
+// Constructor implementation
+template<typename T>
+Planet<T>::Planet(
+    const glm::tvec3<T>& position,
+    const glm::tvec3<T>& velocity,
+    const glm::tvec3<T>& acceleration,
+    T radius,
+    T mass,
+    const glm::tvec3<T>& color,
+    bool fixed) 
+    : position(position), velocity(velocity), acceleration(acceleration),
+    color(color), mass(mass), radius(radius), fixed(fixed) {}

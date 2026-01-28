@@ -7,7 +7,7 @@
 #include "SimulationWrapper.hpp"
 #include "GraphicsWrapper.hpp"
 #include "Logger.hpp"
-
+#include "PlanetProperties.hpp"
 // imgui.h is included inside ImguiLayer.hpp, but can be included here if needed
 // #include "imgui.h" 
 
@@ -82,6 +82,12 @@ void Application::run()
         sys_logger.debug("Rendering Framebuffer");
         gfx.RenderToFramebuffer(simWrapper.getPlanets());
 
+        //changing planets positions
+        std::vector<PlanetProperties<float>> planets= simWrapper.getPlanets();
+        for (std::vector<PlanetProperties<float>>::iterator planet=planets.begin();planet!=planets.end();planet++){
+            (*planet).set_position((*planet).get_position()+0.5f);
+        }
+
         
         // 2. Start Frame
         sys_logger.debug("Starting frame");
@@ -101,10 +107,10 @@ void Application::run()
         
         // 4. Draw UI
         uiLayer.drawUI();
-        sys_logger.info("UI drawn");
+        sys_logger.debug("UI drawn");
         // 5. Render & Swap Buffers
         uiLayer.endFrame();
-        sys_logger.info("Frame ended");
+        sys_logger.debug("Frame ended");
     }
     uiLayer.clean_up();
 }

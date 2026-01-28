@@ -10,12 +10,14 @@
 using std::vector;
 
 // === Camera variables ===
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 5.0f);
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 10.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
-float deltaTime = 0.0f;
+float deltaTime = 1; // our delta time is fixed to one day
 float lastFrame = 0.0f;
+static float G = 2.96e-4;
+
 
 // === Input handling ===
 void processInput(GLFWwindow *window) {
@@ -81,47 +83,131 @@ GLuint compileShader(GLenum type, const char* src) {
     return shader;
 }
 
-void apply_newton_law(vector<PlanetProperties<float>> &planets)
+/*void apply_newton_law(std::vector<PlanetProperties>& planets)
 {
-    PlanetProperties<float> *A, *B;
-    glm::vec3 Force;
-    float MA, MB, dist;
-    const float G = 6.673e-2;
-    for(int i = 0; i < planets.size(); i++){
-        A = &planets[i];
-        for(int j = i + 1; j < planets.size(); j++){
-            // B = &planets[j];
-            // MA = A->get_mass();
-            // MB = B->get_mass();
-            
+    if((planets[0].get_position()-planets[1].get_position()).length() > 1e-2f){
+        // Use references (NO copies)
+        PlanetProperties& p1 = planets[0];
+        PlanetProperties& p2 = planets[1];
 
-            // glm::vec3 dir = B->get_position() - A->get_position();
-            // float dist = glm::length(dir);
-            // if (dist < 0.000001f) continue;
-            // glm::vec3 norm = dir / dist;
+        // === 1. Update positions (Velocity Verlet) ===
+        p1.set_position(
+            p1.get_position() +
+            p1.get_velocity() +
+            0.5f * p1.get_acceleration()
+        );
 
-            // float F_scal = (G * MA * MB) / (dist * dist);
-            // glm::vec3 F = norm * F_scal;
+        p2.set_position(
+            p2.get_position() +
+            p2.get_velocity() +
+            0.5f * p2.get_acceleration()
+        );
 
-            // A->accumulateForce(F);
-            // B->accumulateForce(-F);
+        // === 2. Compute new accelerations (Newtonian gravity) ===
+        glm::vec3 r12 = p2.get_position() - p1.get_position();
+        float dist = glm::length(r12);
 
-            B = &planets[j];
-            Force = A->apply_newton_law(*B);
-            A->accumulateForce(+Force);
-            B->accumulateForce(-Force);
+        // (Optional but recommended: avoid singularity)
+        float dist3 = dist * dist * dist + 1e-6f;
 
+        glm::vec3 a1_new = G * p2.get_mass() * r12 / dist3;
+        glm::vec3 a2_new = -G * p1.get_mass() * r12 / dist3;
+
+        // === 3. Update velocities ===
+        p1.set_velocity(
+            p1.get_velocity() +
+            0.5f * (p1.get_acceleration() + a1_new)
+        );
+
+        p2.set_velocity(
+            p2.get_velocity() +
+            0.5f * (p2.get_acceleration() + a2_new)
+        );
+
+        // === 4. Store new accelerations ===
+        p1.set_acceleration(a1_new);
+        p2.set_acceleration(a2_new);
+    }
+} */
+
+
+void compute_accelerations(std::vector<CelestialObjectProperties>& planets) {
+    size_t N = planets.size();
+
+    // Reset accelerations
+    for (auto& p : planets) p.set_acceleration(glm::vec3(0.0f));
+
+    // Pairwise gravitational forces
+    for (size_t i = 0; i < N; ++i) {
+        for (size_t j = 0; j < N; ++j) {
+            if (i == j) continue;
+            glm::vec3 r_ij = planets[j].get_position() - planets[i].get_position();
+            float dist3 = glm::length(r_ij);
+            dist3 = dist3 * dist3 * dist3 + 1e-6f;
+            planets[i].set_acceleration(planets[i].get_acceleration() + 
+                                        G * planets[j].get_mass() * r_ij / dist3);
         }
     }
+}
 
-    for (auto &itr : planets) {
-        itr.update(deltaTime);
+void velocity_verlet(std::vector<CelestialObjectProperties>& planets, float dt) {
+    size_t N = planets.size();
+
+    // 1. Update positions
+    for (auto& p : planets) {
+        p.set_position(p.get_position() + p.get_velocity() * dt + 0.5f * p.get_acceleration() * dt*dt);
     }
 
+    // 2. Store old accelerations
+    std::vector<glm::vec3> old_acc(N);
+    for (size_t i = 0; i < N; ++i) old_acc[i] = planets[i].get_acceleration();
 
+    // 3. Compute new accelerations
+    compute_accelerations(planets);
 
-
+    // 4. Update velocities
+    for (size_t i = 0; i < N; ++i) {
+        planets[i].set_velocity(planets[i].get_velocity() + 0.5f * (old_acc[i] + planets[i].get_acceleration()) * dt);
+    }
 }
+
+glm::vec3 compute_center_of_mass(const std::vector<CelestialObjectProperties>& planets) {
+    glm::vec3 COM(0.0f);
+    float total_mass = 0.0f;
+    for (const auto& p : planets) {
+        COM += p.get_mass() * p.get_position();
+        total_mass += p.get_mass();
+    }
+    return COM / total_mass;
+}
+
+void init_orbital_velocities(std::vector<CelestialObjectProperties>& planets) {
+    glm::vec3 COM = compute_center_of_mass(planets);
+
+    // Total mass excluding each planet (for simple approximation)
+    float total_mass = 0.0f;
+    for (auto& p : planets) total_mass += p.get_mass();
+
+    for (auto& p : planets) {
+        glm::vec3 r = p.get_position() - COM;       // radius vector from COM
+        float r_mag = glm::length(r);
+        if (r_mag < 1e-6f) continue;               // skip COM itself
+
+        // Tangent vector perpendicular to r (simple 2D approach in XY plane)
+        glm::vec3 tangent(-r.y, r.x, 0.0f);        // perpendicular in XY
+        tangent = glm::normalize(tangent);
+
+        // Velocity magnitude using vis-viva (circular orbit)
+        float v_mag = sqrt(G * (total_mass - p.get_mass()) / r_mag);
+
+        // Set initial velocity
+        p.set_velocity(tangent * v_mag);
+    }
+}
+
+
+
+
 int main() {
     // === Init GLFW ===
     glfwInit();
@@ -154,40 +240,23 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    // === Positions of the two planets ===
-    // glm::vec3 planetPositions[] = {
-    //     glm::vec3(-1.5f, 0.0f, 0.0f),
-    //     glm::vec3( 1.5f, 0.0f, 0.0f)
-    // };
-
-    std::vector<PlanetProperties> planets;
-
-    PlanetProperties p1(glm::vec3(-0.5f, 0.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
-                        "P1");
     
-    PlanetProperties p2(glm::vec3(0.5f, 0.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
-                        "P2");
+    vector<CelestialObjectProperties> planets;
+    planets.emplace_back(glm::vec3(-1,0,0), glm::vec3(0),glm::vec3(0), 0.1f, 3.0f, glm::vec3(1,0,0), "P1");
+    planets.emplace_back(glm::vec3( 1,0,0), glm::vec3(0),glm::vec3(0), 0.05f, 1.0f, glm::vec3(0,1,0), "P2");
+    planets.emplace_back(glm::vec3( 0,1,0), glm::vec3(0),glm::vec3(0), 0.07f, 2.0f, glm::vec3(0,0,1), "P3");
 
-    PlanetProperties p3(glm::vec3(1.0f, 3.0f, 0.0f),
-                        glm::vec3(0,0,0),
-                        glm::vec3(0,0,0), 1.0f, 10.0f, glm::vec3(0,0,0),
-                        "P");
+    // Compute initial velocities
+    init_orbital_velocities(planets);
+    // Compute initial accelerations
+    compute_accelerations(planets);
 
-    planets.push_back(p1);
-    planets.push_back(p2);
-    planets.push_back(p3);
+
+    float deltaTime = 1; // our delta time is fixed to one day
 
     // === Main loop ===
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        
+       
 
         processInput(window);
 
@@ -206,11 +275,13 @@ int main() {
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
 
         //Update position of each planet
-        apply_newton_law(planets);
+        //apply_newton_law(planets);
+        velocity_verlet(planets, deltaTime);
+
 
 
         // Draw both "planets"
-        for (int i = 0; i < planets.size(); i++) {
+        for (int i = 0; i < 3; i++) {
             glm::mat4 model = glm::translate(glm::mat4(1.0f), planets[i].get_position());
             model = glm::scale(model, glm::vec3(0.5f));
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
@@ -221,8 +292,7 @@ int main() {
             glm::vec3 pos = planets[i].get_position();
             std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
         }
-        for(auto &itr : planets) itr.update(deltaTime);
-
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

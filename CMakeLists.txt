@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.15)
 
+# Valgrind profiling support
+
 project(ProjecCpp)
 set(SOURCES main.cpp)
 #hello world
+#testing branch
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external")
 set(IMGUI_DIR "${LIB_DIR}/imgui")
 
- set(GLM_LINK_FLAGS "-lm")
+set(GLM_LINK_FLAGS "-lm")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GLM_LINK_FLAGS}")
 
 find_package(glfw3 REQUIRED)
@@ -29,19 +32,19 @@ target_include_directories(glad PUBLIC "${LIB_DIR}/glad/include")
 # Dear IMGUI library
 ########################################################
 add_library(imgui
-    "${IMGUI_DIR}/imgui.cpp"
-    "${IMGUI_DIR}/imgui_demo.cpp"
-    "${IMGUI_DIR}/imgui_draw.cpp"
-    "${IMGUI_DIR}/imgui_tables.cpp"
-    "${IMGUI_DIR}/imgui_widgets.cpp"
-    "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
-    "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+"${IMGUI_DIR}/imgui.cpp"
+"${IMGUI_DIR}/imgui_demo.cpp"
+"${IMGUI_DIR}/imgui_draw.cpp"
+"${IMGUI_DIR}/imgui_tables.cpp"
+"${IMGUI_DIR}/imgui_widgets.cpp"
+"${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+"${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
 )
 
 target_include_directories(imgui PUBLIC
-    ${IMGUI_DIR}
-    ${IMGUI_DIR}/backends
-    ${IMGUI_DIR}/
+${IMGUI_DIR}
+${IMGUI_DIR}/backends
+${IMGUI_DIR}/
 )
 ########################################################
 # Creating a Common Libraries Interface
@@ -49,16 +52,16 @@ target_include_directories(imgui PUBLIC
 add_library(common_libs INTERFACE)
 
 target_link_libraries(common_libs INTERFACE
-    imgui
-    glad
-    glfw
-    glm::glm
-    SDL2::SDL2
+imgui
+glad
+glfw
+glm::glm
+SDL2::SDL2
 )
 
 target_include_directories(common_libs INTERFACE
-    ${INC_DIR}
-    ${SRC_DIR}
+${INC_DIR}
+${SRC_DIR}
 )
 
 ########################################################
@@ -66,37 +69,58 @@ target_include_directories(common_libs INTERFACE
 ########################################################
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE 
-    imgui
-    glad
-    glfw
-    glm::glm
-    SDL2::SDL2 
-    ${CMAKE_DL_LIBS}
+imgui
+glad
+glfw
+glm::glm
+SDL2::SDL2 
+${CMAKE_DL_LIBS}
 )
 
 
 ########################################################
 # Samples for testing purposes
 ########################################################
-# set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
+find_program(VALGRIND_PROGRAM valgrind)
+if(VALGRIND_PROGRAM)
+set(VALGRIND_COMMAND "${VALGRIND_PROGRAM}" CACHE STRING "Valgrind executable")
+add_custom_target(valgrind
+COMMAND ${VALGRIND_COMMAND} --leak-check=full --show-leak-kinds=all
+./${PROJECT_NAME}
+DEPENDS ${PROJECT_NAME}
+COMMENT "Running Valgrind memory profiler..."
+)
+endif()
+
+set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
 
 # add_executable(imgui_sample "${SAMPLES_DIR}/imgui_sample.cpp")
 # target_link_libraries(imgui_sample PRIVATE 
-#     common_libs
+ #   common_libs
 # )
 
 
-# add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
-# target_link_libraries(CorpSimulation PRIVATE 
-#     common_libs
-# )
+#add_executable(CorpSimulation "${SAMPLES_DIR}/CorpSimulation.cpp" )
+#target_link_libraries(CorpSimulation PRIVATE 
+#   common_libs
+#)
 
-# add_executable(imgui_glad_cube "${SAMPLES_DIR}/imgui_glad_cube.cpp")
-# target_link_libraries(imgui_glad_cube PRIVATE 
-#     common_libs
-#     glad
-#     glfw
-#     imgui
-#     glm::glm
-#     SDL2::SDL2 
-# )
+# TwoBodyProblem sample
+# add_executable(TwoBodyProblem "${SAMPLES_DIR}/TwoBodyProblem.cpp")
+# target_link_libraries(TwoBodyProblem PRIVATE common_libs)
+
+# # NBodyProblem sample
+# #add_executable(NBodyProblem "${SAMPLES_DIR}/NBodyProblem.cpp")
+# #target_link_libraries(NBodyProblem PRIVATE common_libs)
+
+# # SolarSystem sample
+add_executable(SolarSystem "${SAMPLES_DIR}/SolarSystem.cpp")
+target_link_libraries(SolarSystem PRIVATE common_libs)
+
+# # sphere sample
+# add_executable(sphere "${SAMPLES_DIR}/sphere.cpp")
+# target_link_libraries(sphere PRIVATE common_libs)
+
+# # sphericalsolsys sample
+# add_executable(sphericalsolsys "${SAMPLES_DIR}/sphericalsolsys.cpp")
+# target_link_libraries(sphericalsolsys PRIVATE common_libs)

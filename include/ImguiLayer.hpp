@@ -3,12 +3,17 @@
 #include <string>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
 #include <stdexcept>
 #include <cstdio>
 #include <iostream>
+#include <chrono>
+#include <thread>
+#include <mutex>
+
+
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 #include <glm/glm.hpp>
 #include "GraphicsWrapper.hpp"
 #include "SimulationWrapper.hpp"
@@ -105,7 +110,7 @@ namespace gui
         void ConfigurationWindow(bool *page_open);
         void SimulationWindow();
         
-        void DrawPlanetOverlay(PlanetProperties& selected_planet);
+        void DrawPlanetOverlay(PlanetProperties<float>& selected_planet);
         
         public:
         
@@ -134,10 +139,11 @@ namespace gui
     // Marked inline because they are implemented in a .hpp file
     inline void ImguiLayer::load_simulation(string filepath) {
         sys_logger.debug("Loading simulation via ImguiLayer");
-        PlanetJSONReader reader("../" + filepath);
+        PlanetJSONReader<float> reader("../" + filepath);
         
+
         // Load the the file and set the simulation state
-        simulation->setInitialState(reader.get_planets(), true);
+        simulation->setInitialState(reader, true);
         
     }
     inline ImguiLayer::ImguiLayer(graphics::GraphicsWrapper &graphics, SimulationWrapper &simulation): 
@@ -383,7 +389,7 @@ namespace gui
         ImGui::End();
     }
     
-    void  ImguiLayer::DrawPlanetOverlay(PlanetProperties& planet){
+    void  ImguiLayer::DrawPlanetOverlay(PlanetProperties<float>& planet){
         
         ImGui::Begin("Planet Configuration", nullptr,
             ImGuiWindowFlags_AlwaysAutoResize |
@@ -440,7 +446,7 @@ namespace gui
 
                 
                 if (ImGui::Button("Reset Forces")) {
-                    planet.set_force(glm::vec3(0,0,0));
+                    // planet.set_force(glm::vec3(0,0,0));
                     planet.set_acceleration(glm::vec3(0,0,0));
                     sys_logger.simulation("Planet " + planet.get_name() + " forces and acceleration reset.");
                 }
@@ -462,7 +468,7 @@ namespace gui
                 
                 
                 
-                simulation->setDeltaTime(0.001f); // assuming 60 FPS base
+                // simulation->setDeltaTime(0.001f); // assuming 60 FPS base
                 
                 if (!isPaused){
                     simulation->UpdateSimulation(0.001f, timeScale);
@@ -477,7 +483,7 @@ namespace gui
                 
                 
                 if (WMData.showPlanetOverlay && selectedPlanetIdx != -1){
-                    PlanetProperties& planet = simulation->PlanetByIdx(selectedPlanetIdx);
+                    PlanetProperties<float>& planet = simulation->PlanetByIdx(selectedPlanetIdx);
                     DrawPlanetOverlay(planet);
                 }
                 
@@ -551,19 +557,20 @@ namespace gui
                         ImGui::Separator();
                         ImGui::Text("Camera Controller");
                         
-                        ImGui::DragFloat3("Position", &(gfx->camera.Position[0]), 0.1f);
+                        bool rotationChanged = false;
                         
                         // 2. Rotação (Edita Yaw/Pitch e chama updateVectors)
-                        bool rotationChanged = false;
+                        rotationChanged |= ImGui::DragFloat3("Position", &(gfx->camera.Position[0]), 0.1f);
                         rotationChanged |= ImGui::DragFloat("Yaw", &(gfx->camera.Yaw), 0.5f);
                         rotationChanged |= ImGui::SliderFloat("Pitch", &(gfx->camera.Pitch), -89.0f, 89.0f);
+                        rotationChanged |= ImGui::SliderFloat("Zoom (FOV)", &(gfx->camera.Fov), 1.0f, 120.0f);
+                        
                         
                         if (rotationChanged) {
+                            sys_logger.simulation("Camera rotation changed: Yaw=" + std::to_string(gfx->camera.Yaw) + ", Pitch=" + std::to_string(gfx->camera.Pitch));
                             gfx->camera.updateVectors();
                         }
                         
-                        // 3. Zoom (FOV)
-                        ImGui::SliderFloat("Zoom (FOV)", &(gfx->camera.Fov), 1.0f, 120.0f);
                         
                         ImGui::Separator();
                         if (ImGui::Button("Reset View")) {
@@ -672,22 +679,38 @@ namespace gui
                     
                     ImGui::BeginChild("LogRegion", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
                     
-                    std::string logBuffer = sys_logger.get_log_buffer();
+                    static std::string logBuffer;
+                    static std::mutex logMutex;
                     
-                    if (!logBuffer.empty())
-                    {
-                        ImGui::TextUnformatted(logBuffer.c_str());
-                        
-                        // Auto-scroll para o fim
-                        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-                        ImGui::SetScrollHereY(1.0f);
-                    }
-                    else
-                    {
-                        ImGui::TextDisabled("No simulation logs yet.");
+                    // Update log buffer from separate thread
+                    static std::thread logThread;
+                    static bool logThreadRunning = false;
+                    
+                    if (!logThreadRunning) {
+                        logThreadRunning = true;
+                        logThread = std::thread([&]() {
+                            while (logThreadRunning) {
+                                {
+                                    std::lock_guard<std::mutex> lock(logMutex);
+                                    logBuffer = sys_logger.get_log_buffer();
+                                }
+                                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                            }
+                        });
                     }
                     
-                    ImGui::Text("[INFO] Calculating step...");
+                    {
+                        std::lock_guard<std::mutex> lock(logMutex);
+                        ImGui::Text("[INFO] Calculating step...");
+                        if (!logBuffer.empty()) {
+                            ImGui::TextUnformatted(logBuffer.c_str());
+                            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+                                ImGui::SetScrollHereY(1.0f);
+                        } else {
+                            ImGui::TextDisabled("No simulation logs yet.");
+                        }
+                    }
+                    
                     ImGui::EndChild();
                 }
                 ImGui::End();

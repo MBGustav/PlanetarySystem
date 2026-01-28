@@ -201,6 +201,8 @@ void JSONReader::parse_content()
 
 JSONReader::~JSONReader()
 {
+    data_map.clear();
+    filepath.clear();
 }
 
 bool JSONReader::file_exists() const
