@@ -15,7 +15,7 @@ class SimulationWrapper
 {
     private:
     
-    std::vector<CelestialObjectProperties<float>> planets;
+    std::vector<PlanetProperties<float>> planets;
     
     
     
@@ -24,12 +24,12 @@ class SimulationWrapper
     ~SimulationWrapper();
     
     void calculateIteration(float deltatime);
-    bool addPlanet(const CelestialObjectProperties<float>& planet);
+    bool addPlanet(const PlanetProperties<float>& planet);
     size_t getPlanetCount() const;
-    const std::vector<CelestialObjectProperties<float>>& getPlanets() const;
-    const std::vector<CelestialObjectProperties<float>>& getcopyPlanets() const;
-    const vector<CelestialObject<float>>& getRawPlanets() const;
-    const std::vector<CelestialObjectProperties<float>>& getPlanetProperties() const { return planets; }
+    const std::vector<PlanetProperties<float>>& getPlanets() const;
+    const std::vector<PlanetProperties<float>>& getcopyPlanets() const;
+    const vector<Planet<float>>& getRawPlanets() const;
+    const std::vector<PlanetProperties<float>>& getPlanetProperties() const { return planets; }
     
 };
 
@@ -44,7 +44,7 @@ SimulationWrapper::~SimulationWrapper()
 }
 
 
-bool SimulationWrapper::addPlanet(const CelestialObjectProperties<float>& planet) 
+bool SimulationWrapper::addPlanet(const PlanetProperties<float>& planet) 
 {
     try
     {
@@ -67,26 +67,19 @@ size_t SimulationWrapper::getPlanetCount() const
 }
 
 
-const vector<CelestialObjectProperties<float>>& SimulationWrapper::getPlanets() const {
+const vector<PlanetProperties<float>>& SimulationWrapper::getPlanets() const {
     return planets;
 }
 
-const vector<CelestialObjectProperties<float>>& SimulationWrapper::getcopyPlanets() const {
-    std::vector<CelestialObjectProperties<float>> copy_planets;
+const vector<PlanetProperties<float>>& SimulationWrapper::getcopyPlanets() const {
+    std::vector<PlanetProperties<float>> copy_planets;
     for(auto p : planets) {
         copy_planets.push_back(p);
     }
     return copy_planets;
 }
 
-// Conversion to raw vector for graphics rendering
-const vector<CelestialObject<float>>& SimulationWrapper::getRawPlanets() const {
-    vector<CelestialObject<float>> raw_planets;
-    for(auto p : planets) {
-        raw_planets.push_back(p.toPlanet());
-    }
-    return raw_planets;
-}
+
 /*void SimulationWrapper::calculateIteration(float deltatime) {
     // TO-DO: implement the simulation step calculations
     size_t i, j;
@@ -94,11 +87,11 @@ const vector<CelestialObject<float>>& SimulationWrapper::getRawPlanets() const {
     // iterate over each planet:
     // (TODO: optimize with parallel processing)
     for(i =0; i < n_planets; i++) {
-        CelestialObjectProperties<float>& p1 = planets[i];
+        PlanetProperties<float>& p1 = planets[i];
         for(j =i + 1; j < n_planets; j++) 
         {
             
-            CelestialObjectProperties<float>& p2 = planets[j];
+            PlanetProperties<float>& p2 = planets[j];
             glm::vec3 force = p2.apply_newton_law(p1);
             p1.accumulateForce(+force);   
             p2.accumulateForce(-force); 

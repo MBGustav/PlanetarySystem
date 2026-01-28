@@ -7,7 +7,7 @@
 #include "Camera.hpp"
 #include <glad/glad.h>
 
-// PLanetProperties adds extra features (name, rendering) to CelestialObject
+// PlanetProperties adds extra features (name, rendering) to Planet
 
 template<typename T>
 class PlanetProperties : public Planet<T>
@@ -17,8 +17,8 @@ private:
 
 public:
     // Default constructor
-    PLanetProperties()
-        : CelestialObject<T>(
+    PlanetProperties()
+        : Planet<T>(
               glm::tvec3<T>(0,0,0),
               glm::tvec3<T>(0,0,0),
               glm::tvec3<T>(0,0,0),
@@ -30,7 +30,7 @@ public:
     {}
 
     // Full constructor
-    PLanetProperties(
+    PlanetProperties(
         const glm::tvec3<T>& position,
         const glm::tvec3<T>& velocity,
         const glm::tvec3<T>& acceleration,
@@ -39,16 +39,16 @@ public:
         const glm::tvec3<T>& color,
         const std::string& name
     )
-    : CelestialObject<T>(position, velocity, acceleration, radius, mass, color),
+    : Planet<T>(position, velocity, acceleration, radius, mass, color),
       name(name)
     {}
 
     // Getter for name
     std::string get_name() const { return name; }
 
-    // Convert to base CelestialObject<T>
-    CelestialObject<T> toPlanet() const {
-        return CelestialObject<T>(
+    // Convert to base Planet<T>
+    Planet<T> toPlanet() const {
+        return Planet<T>(
             this->get_position(),
             this->get_velocity(),
             this->get_acceleration(),
@@ -58,5 +58,5 @@ public:
         );
     }
 
-    ~PLanetProperties() = default;
+    ~PlanetProperties() = default;
 };

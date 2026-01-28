@@ -54,14 +54,14 @@ inline void Application::setup()
     // Simulation Windows must comunicate with layer
     
     // Create some default planets for testing
-    CelestialObjectProperties<float> earthProps;
+    PlanetProperties<float> earthProps;
     earthProps.set_position({0.0f, 0.0f, 0.0f});
     earthProps.set_velocity({0.0f, 0.0f, 0.0f});
     earthProps.set_radius(1.0f);
     earthProps.set_mass(10.0f);
     earthProps.set_color({5.0f, 0.0f, 0.0f});
 
-    CelestialObjectProperties<float> marsProps;
+    PlanetProperties<float> marsProps;
     marsProps.set_position({0.5f, 0.5f, 0.5f});
     marsProps.set_velocity({1.0f, 0.00f, 0.0f});
     marsProps.set_radius(0.5f);
@@ -102,8 +102,8 @@ void Application::run()
         gfx.RenderToFramebuffer(simWrapper.getPlanets());
 
         //changing planets positions
-        std::vector<CelestialObjectProperties<float>> planets= simWrapper.getPlanets();
-        for (std::vector<CelestialObjectProperties<float>>::iterator planet=planets.begin();planet!=planets.end();planet++){
+        std::vector<PlanetProperties<float>> planets= simWrapper.getPlanets();
+        for (std::vector<PlanetProperties<float>>::iterator planet=planets.begin();planet!=planets.end();planet++){
             (*planet).set_position((*planet).get_position()+0.5f);
         }
 

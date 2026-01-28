@@ -11,7 +11,7 @@ T G = static_cast<T>(2.96e-4); // gravitational constant in your units
 
 // Compute accelerations due to gravity
 template<typename T>
-void compute_accelerations(std::vector<CelestialObjectProperties<T>>& planets)
+void compute_accelerations(std::vector<PlanetProperties<T>>& planets)
 {
     // Reset each planet's acceleration
     for (auto& p : planets)
@@ -34,7 +34,7 @@ void compute_accelerations(std::vector<CelestialObjectProperties<T>>& planets)
 
 // Velocity Verlet integration
 template<typename T>
-void velocity_verlet(std::vector<CelestialObjectProperties<T>>& planets)
+void velocity_verlet(std::vector<PlanetProperties<T>>& planets)
 {
     std::vector<glm::tvec3<T>> a_old(planets.size());
     for (size_t i = 0; i < planets.size(); ++i)
@@ -59,8 +59,8 @@ void velocity_verlet(std::vector<CelestialObjectProperties<T>>& planets)
 
 // Initialize two planets in an elliptical orbit using vis-viva equation
 template<typename T>
-void init_elliptical_orbit_visviva(CelestialObjectProperties<T>& p1,
-                                   CelestialObjectProperties<T>& p2,
+void init_elliptical_orbit_visviva(PlanetProperties<T>& p1,
+                                   PlanetProperties<T>& p2,
                                    T a, T e,
                                    T true_anomaly = 0)
 {
