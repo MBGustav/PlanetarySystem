@@ -1,0 +1,28 @@
+{
+  "planets": [
+    {
+      "name": "Corpus Solis",
+      "mass": 1.0,
+      "radius": 1.0,
+      "position": [0.0132604844, 0.0, 0.0],
+      "velocity": [0.0, 1.054151921, 0.0],
+      "color": [255, 255, 0]
+    },
+    {
+      "name": "Corpus Mercurii",
+      "mass": 1.0,
+      "radius": 1.0,
+      "position": [1.4157286016, 0.0, 0.0],
+      "velocity": [0.0, -0.2101466639, 0.0],
+      "color": [200, 200, 200]
+    },
+    {
+      "name": "Corpus Veneris",
+      "mass": 1.0,
+      "radius": 1.0,
+      "position": [-1.4289890859, 0.0, 0.0],
+      "velocity": [0.0, -0.8440052572, 0.0],
+      "color": [255, 200, 150]
+    }    
+  ]
+}

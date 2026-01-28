@@ -25,33 +25,41 @@ static const std::string  BOLDCYAN    = "\033[1m\033[36m";      /* Bold Cyan */
 static const std::string  BOLDWHITE   = "\033[1m\033[37m";      /* Bold White */
 
 class Logger {
-private:
+    private:
     std::string filename;
     bool with_time, with_date;
-
+    
+    std::stringstream simulation_buffer;  
+    
     std::string getCurrentTime() {
         auto now = std::chrono::system_clock::now();
         auto time = std::chrono::system_clock::to_time_t(now);
         std::stringstream ss;
         if(with_date) ss << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d") << "] ";
         if(with_time) ss << "[" << std::put_time(std::localtime(&time), "%H:%M:%S") << "]";
-
+        
         return ss.str();
     }
-
+    
     std::string beautify(std::string message, std::string color) 
     {
         return std::string(color + message + RESET);
     }
-    
-    void log(const std::string level, const std::string message) {
-        std::cout << getCurrentTime() 
-                  << "[" << level << "] " << RESET << message <<  std::endl;
+
+    void log(const std::string level, const std::string message, bool simulation = false) {
+        std::stringstream entry;
+        
+        entry << getCurrentTime()
+        << "[" << level << "] "
+        << message << "\n";
+        
+        std::cout << entry.str();                         // console
+        if(simulation) simulation_buffer << entry.str();  // buffer
     }
     
-public:
+    public:
     Logger(const std::string& filename, bool with_time = true, bool with_date = true) : 
-        filename(filename), with_time(with_time), with_date(with_date) {}
+    filename(filename), with_time(with_time), with_date(with_date) {}
     
     void info(const std::string& message) {
         log(beautify(BOLDBLUE, "INFO") , message);
@@ -68,7 +76,16 @@ public:
     void debug(const std::string& message) {
         log(beautify(BOLDWHITE, "DEBUG"), message);
     }
+    
+    void simulation(const std::string& message) {
+        log("SIM", message, true);
+    }
+
+    std::string get_log_buffer() {
+        return simulation_buffer.str();
+    }
 };
+
 
 // Glbal Logger Instance
 static Logger sys_logger("Application");

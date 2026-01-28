@@ -16,8 +16,6 @@ private:
     // Planet attributes -- color
     std::string name;
 
-    
-        
 public:
     PlanetProperties();
 
@@ -32,6 +30,8 @@ public:
     Planet toPlanet() const {
         return Planet(get_position(), get_velocity(), get_acceleration(), get_radius(), get_mass(), glm::vec3(1.0f));
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const PlanetProperties& Planet);
     
     ~PlanetProperties();
 };
@@ -39,14 +39,46 @@ public:
 
 PlanetProperties::PlanetProperties(const glm::vec3 position, const glm::vec3 velocity, const glm::vec3 acceleration,
                                  float radius, float mass, const glm::vec3 color, const std::string& name):
-    Planet(position, velocity, acceleration, radius, mass, color), name(name) {}
+    Planet(position, velocity, acceleration, radius, mass, color), name(name) 
+    {
+        this->set_force(glm::vec3(0.0f));
+    }
 
 
 PlanetProperties::PlanetProperties()
     : Planet(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 1.0f, glm::vec3(1.0f)), name("Unnamed") {}
 PlanetProperties::~PlanetProperties()
 {
+    this->set_force(glm::vec3(0.0f));
 }
+
+
+
+std::ostream& operator<<(std::ostream& os, const PlanetProperties& Planet)
+{
+    auto mass  = Planet.get_mass();
+    auto pos   = Planet.get_position();
+    auto vel   = Planet.get_velocity();
+    auto acc   = Planet.get_acceleration();
+    auto color = Planet.get_color(); 
+    auto force = Planet.get_force(); 
+
+
+    os << "Planet Informations: \n";
+    os <<"name:                " << Planet.get_name()         << std::endl;
+    os <<"mass:                " << Planet.get_mass()         << std::endl;
+    os <<"radius:              " << Planet.get_radius()       << std::endl;
+    os <<"Is fixed:            " << Planet.is_fixed()         << std::endl;
+    os <<"Color:               " << color.x << ", " << color.y << ", " << color.z << std::endl;
+    os <<"force:               " << force.x << ", " << force.y << ", " << force.z << std::endl;
+    os <<"position(x,y,z):     " << pos.x   << ", " << pos.y   << ", " << pos.z << std::endl;
+    os <<"velocity(x,y,z):     " << vel.x   << ", " << vel.y   << ", " << vel.z << std::endl;
+    os <<"acceleration(x,y,z): " << acc.x   << ", " << acc.y   << ", " << acc.z << std::endl;
+
+    return os;
+}
+
+
 
 // void PlanetProperties::draw(Camera& camera, GLuint shaderProgram, GLuint VAO)
 // {
