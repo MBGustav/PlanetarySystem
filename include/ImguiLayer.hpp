@@ -53,7 +53,7 @@ namespace gui
     static float MAX_MASS = 50.0f;
     
     static float MIN_TIMESCALE = 01.0f;
-    static float MAX_TIMESCALE = 50.0f;
+    static float MAX_TIMESCALE = 200.0f;
     
     
     // Persistent Data for Window Managing
@@ -312,7 +312,7 @@ namespace gui
                     load_simulation("simulations/three_body_problem.json");
                     break;
                     case SOLAR_SYSTEM_SIMULATION:
-                    load_simulation("simulations/solar_system.json");
+                    load_simulation("simulations/and_another_json.json");
                     break;
                     case N_BODY_SIMULATION:
                     // load_simulation("n_body_simulation.json");
@@ -391,9 +391,19 @@ namespace gui
     
     void  ImguiLayer::DrawPlanetOverlay(PlanetProperties<float>& planet){
         
+        
+        static PlanetProperties<float> prev_state; // Store previous state for comparison
+        static bool has_backup = false;
+
+        if(!has_backup) {
+            prev_state = planet; // Backup initial state
+            has_backup = true;
+        }
         ImGui::Begin("Planet Configuration", nullptr,
             ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoCollapse);
+            ImGuiWindowFlags_NoCollapse | 
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoResize);
             
             ImGui::Text("Planet: %s", planet.get_name().c_str());
             ImGui::Separator();
@@ -445,10 +455,19 @@ namespace gui
                 ImGui::Separator();
 
                 
-                if (ImGui::Button("Reset Forces")) {
-                    // planet.set_force(glm::vec3(0,0,0));
-                    planet.set_acceleration(glm::vec3(0,0,0));
-                    sys_logger.simulation("Planet " + planet.get_name() + " forces and acceleration reset.");
+                if (ImGui::Button("Reset Configuration")) {
+                    planet.set_position(prev_state.get_position());
+                    planet.set_velocity(prev_state.get_velocity());
+                    planet.set_mass(prev_state.get_mass());
+                    planet.set_radius(prev_state.get_radius());
+                    planet.set_fixed(prev_state.is_fixed());
+                    planet.set_color(prev_state.get_color());
+                    sys_logger.simulation("Planet " + planet.get_name() + " configuration reset to previous state.");
+                }
+                
+                // Close button
+                if (ImGui::Button("Close")) {
+                    WMData.showPlanetOverlay = false;
                 }
                 
                 ImGui::End();
@@ -600,10 +619,11 @@ namespace gui
                     ImGui::BeginChild("Controls", ImVec2(250, -150), true);
                     {
                         ImGui::Separator();
-                        ImGui::TextColored(ImVec4(1,1,0,1), ": ");
+                        ImGui::TextColored(ImVec4(1,1,0,1), "List of Planets: ");
                         ImGui::Spacing();
                         
                         // Playback controls
+                        
                         if (ImGui::BeginCombo("##SelectPlanet", item == -1 ? "" : planet_names[item].c_str())){
                             for (int n = 0; n < planet_names.size(); n++){
                                 bool is_selected = (item == n);
@@ -612,10 +632,7 @@ namespace gui
                                 if (is_selected) ImGui::SetItemDefaultFocus();
                             }
                             ImGui::EndCombo();
-                        }
-                        static ImVec4 color = ImVec4(114 / 255.0f,  155 / 255.0f, 200/ 255.0f, 255 / 255.0f);
-                        ImGui::ColorEdit4("TesteColor##2f", (float*)&color,ImGuiColorEditFlags_None | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoInputs);
-                        
+                        }                        
                         // ImGui::SliderFloat("Velocity", &planet_parameters[2], 0.0f, 5.0f);
                         ImGui::Spacing();
                         

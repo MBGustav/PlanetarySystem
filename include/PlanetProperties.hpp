@@ -30,6 +30,16 @@ public:
           name("Unnamed")
     {}
 
+    // Constructor copy of Planet
+    PlanetProperties(const Planet<T>& planet, const std::string& name = "Unnamed")
+        : PlanetProperties(planet.get_position(),
+             planet.get_velocity(),
+             planet.get_acceleration(),
+             planet.get_radius(),
+             planet.get_mass(),
+             planet.get_color(),
+             name){}
+
     // Full constructor
     PlanetProperties(
         const glm::tvec3<T>& position,

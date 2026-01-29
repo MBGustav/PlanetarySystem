@@ -10,6 +10,54 @@
 #include "Logger.hpp"
 
 namespace graphics {
+    struct Camera {
+        
+        glm::vec3 Position = glm::vec3(0.0f, 0.0f, 15.0f);
+        glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
+        glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        
+        // Euler Angles
+        float Yaw = -90.0f;
+        float Pitch = 0.0f;
+        
+        // Opções de lente
+        float Fov = 45.0f;
+        
+        float VisualScale = 1.0f;
+        
+        void updateVectors() {
+            glm::vec3 newFront;
+            newFront.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+            newFront.y = sin(glm::radians(Pitch));
+            newFront.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+            Front = glm::normalize(newFront);
+            
+            glm::vec3 Right = glm::normalize(glm::cross(Front, WorldUp));
+            Up = glm::normalize(glm::cross(Right, Front));
+        }
+        
+        glm::vec3 scalePos(const glm::vec3& p) const {
+            return p * VisualScale;
+        }
+        
+        float scaleSize(float r) const {
+            return r * VisualScale;
+        }
+        void ComputeVisualScale(const std::vector<PlanetProperties<float>>& planets) {
+            float maxDist = 0.0f;
+            
+            for (const auto& p : planets) {
+                maxDist = std::max(maxDist, glm::length(p.get_position()));
+            }
+            
+            // Queremos que o objeto mais distante caiba ~50 unidades OpenGL
+            if (maxDist <= 0.0f) VisualScale = 1.0f;
+            else VisualScale = 50.0f / maxDist;
+        }
+    };
+    
+    
     
     class GraphicsWrapper {
         private:
@@ -49,31 +97,6 @@ namespace graphics {
         
         public:
         
-        struct Camera {
-            
-            glm::vec3 Position = glm::vec3(0.0f, 0.0f, 15.0f);
-            glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
-            glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
-            glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-            
-            // Euler Angles
-            float Yaw = -90.0f;
-            float Pitch = 0.0f;
-            
-            // Opções de lente
-            float Fov = 45.0f;
-            
-            void updateVectors() {
-                glm::vec3 newFront;
-                newFront.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-                newFront.y = sin(glm::radians(Pitch));
-                newFront.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-                Front = glm::normalize(newFront);
-                
-                glm::vec3 Right = glm::normalize(glm::cross(Front, WorldUp));
-                Up = glm::normalize(glm::cross(Right, Front));
-            }
-        };
         
         Camera camera;
         
@@ -244,8 +267,8 @@ namespace graphics {
                 glm::mat4 projection = glm::perspective(
                     glm::radians(45.0f),
                     viewportWidth / viewportHeight,
-                    0.1f,
-                    100.0f
+                    0.01f,
+                    1000.0f
                 );
                 
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"view"),
@@ -257,8 +280,16 @@ namespace graphics {
                 for (const auto& p : planets) {
                     
                     
-                    glm::mat4 model = glm::translate(glm::mat4(1.0f), p.get_position());
-                    model = glm::scale(model, glm::vec3(p.get_radius()));
+                    // glm::mat4 model = glm::translate(glm::mat4(1.0f), p.get_position());
+                    // model = glm::scale(model, glm::vec3(p.get_radius()));
+                    
+                    glm::mat4 model = glm::translate(
+                        glm::mat4(1.0f),
+                        camera.scalePos(p.get_position())
+                    );
+                    
+                    float radius = std::max(camera.scaleSize(p.get_radius()), 0.1f); // evita sumir
+                    model = glm::scale(model, glm::vec3(radius));
                     
                     glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"model"),
                     1, GL_FALSE, &model[0][0]);
@@ -307,96 +338,96 @@ namespace graphics {
                     camera.Position + camera.Front, 
                     camera.Up
                 );
-                    
-                    // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-                    glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportWidth / viewportHeight, 0.1f, 100.0f);
-                    glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() ,
-                    glm::vec3(0.5f, 1.0f, 0.0f));
-                    
-                    
-                    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-                    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-                    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-                    
-                    glUniform3f(glGetUniformLocation(shaderProgram, "color"), 0.0f, 0.7f, 1.0f);
-                    
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
-                    
-                    glBindVertexArray(0);
-                    glUseProgram(0);
-                    
-                    
-                }
+                
+                // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+                glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportWidth / viewportHeight, 0.1f, 100.0f);
+                glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() ,
+                glm::vec3(0.5f, 1.0f, 0.0f));
                 
                 
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
                 
-                // void RenderScene(const std::vector<PlanetProperties>& planets,
-                //     float viewportWidth,
-                //     float viewportHeight)
-                //     {
-                //         glEnable(GL_DEPTH_TEST);
-                //         glUseProgram(shaderProgram);
-                //         glBindVertexArray(VAO);
+                glUniform3f(glGetUniformLocation(shaderProgram, "color"), 0.0f, 0.7f, 1.0f);
                 
-                //         glm::mat4 view = glm::lookAt(
-                //             cameraPos,
-                //             glm::vec3(0,0,0),
-                //             cameraUp
-                //         );
+                glDrawArrays(GL_TRIANGLES, 0, 36);
                 
-                //         glm::mat4 projection = glm::perspective(
-                //             glm::radians(45.0f),
-                //             viewportWidth / viewportHeight,
-                //             0.1f,
-                //             100.0f
-                //         );
+                glBindVertexArray(0);
+                glUseProgram(0);
                 
-                //         glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"view"),
-                //         1, GL_FALSE, &view[0][0]);
-                //         glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"projection"),
-                //         1, GL_FALSE, &projection[0][0]);
                 
-                //         for (const PlanetProperties& p : planets) {
-                //             glm::mat4 model = glm::mat4(1.0f);
-                //             model = glm::translate(model, p.get_position());
-                //             model = glm::scale(model, glm::vec3(p.get_radius()));
-                
-                //             glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"model"),
-                //             1, GL_FALSE, &model[0][0]);
-                
-                //             glUniform3fv(glGetUniformLocation(shaderProgram,"color"),
-                //             1, &glm::vec3(0.2f, 0.6f, 1.0f)[0]);
-                
-                //             glDrawArrays(GL_TRIANGLES, 0, 36);
-                //         }
-                
-                //         glBindVertexArray(0);
-                //         glUseProgram(0);
-                //     }
-                
-                //     void RenderToFramebuffer(const std::vector<PlanetProperties>& planets) {
-                //         sys_logger.debug("RenderToFramebuffer called");
-                
-                //         std::cout <<"Size of planets: " << planets.size() << std::endl;
-                
-                //         for(const auto& p : planets) {
-                //             sys_logger.debug("Planet Position: (" + std::to_string(p.get_position().x) + ", " +
-                //             std::to_string(p.get_position().y) + ", " +
-                //             std::to_string(p.get_position().z) + ")");
-                //         }
-                
-                //         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-                //         glViewport(0, 0, (int)width, (int)height);
-                //         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                
-                //         RenderScene(planets, width, height);
-                
-                //         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                //     }
-                
-                float GetWidth() const { return width; }
-                float GetHeight() const { return height; }
-            };
+            }
             
-        } // namespace graphics
+            
+            
+            // void RenderScene(const std::vector<PlanetProperties>& planets,
+            //     float viewportWidth,
+            //     float viewportHeight)
+            //     {
+            //         glEnable(GL_DEPTH_TEST);
+            //         glUseProgram(shaderProgram);
+            //         glBindVertexArray(VAO);
+            
+            //         glm::mat4 view = glm::lookAt(
+            //             cameraPos,
+            //             glm::vec3(0,0,0),
+            //             cameraUp
+            //         );
+            
+            //         glm::mat4 projection = glm::perspective(
+            //             glm::radians(45.0f),
+            //             viewportWidth / viewportHeight,
+            //             0.1f,
+            //             100.0f
+            //         );
+            
+            //         glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"view"),
+            //         1, GL_FALSE, &view[0][0]);
+            //         glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"projection"),
+            //         1, GL_FALSE, &projection[0][0]);
+            
+            //         for (const PlanetProperties& p : planets) {
+            //             glm::mat4 model = glm::mat4(1.0f);
+            //             model = glm::translate(model, p.get_position());
+            //             model = glm::scale(model, glm::vec3(p.get_radius()));
+            
+            //             glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"model"),
+            //             1, GL_FALSE, &model[0][0]);
+            
+            //             glUniform3fv(glGetUniformLocation(shaderProgram,"color"),
+            //             1, &glm::vec3(0.2f, 0.6f, 1.0f)[0]);
+            
+            //             glDrawArrays(GL_TRIANGLES, 0, 36);
+            //         }
+            
+            //         glBindVertexArray(0);
+            //         glUseProgram(0);
+            //     }
+            
+            //     void RenderToFramebuffer(const std::vector<PlanetProperties>& planets) {
+            //         sys_logger.debug("RenderToFramebuffer called");
+            
+            //         std::cout <<"Size of planets: " << planets.size() << std::endl;
+            
+            //         for(const auto& p : planets) {
+            //             sys_logger.debug("Planet Position: (" + std::to_string(p.get_position().x) + ", " +
+            //             std::to_string(p.get_position().y) + ", " +
+            //             std::to_string(p.get_position().z) + ")");
+            //         }
+            
+            //         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+            //         glViewport(0, 0, (int)width, (int)height);
+            //         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            
+            //         RenderScene(planets, width, height);
+            
+            //         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            //     }
+            
+            float GetWidth() const { return width; }
+            float GetHeight() const { return height; }
+        };
         
+    } // namespace graphics
+    
