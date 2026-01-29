@@ -58,7 +58,7 @@ class SimulationWrapper
     
     
     void setInitialState(std::vector<CelestialObjectProperties<float>> v_planets, bool reset_simulation);
-    void setInitialState(PlanetJSONReader<float>& reader, bool reset_simulation);
+    void setInitialState(CelestialObjectJSONReader<float>& reader, bool reset_simulation);
     void UpdateSimulation(float frameTime, float speedMultiplier = 1.0f);
     const std::vector<string>& getPlanetNames() const;
     const std::vector<CelestialObjectProperties<float>>& getPlanets() const {return planets;}
@@ -124,7 +124,7 @@ void SimulationWrapper::setInitialState(std::vector<CelestialObjectProperties<fl
     
 }
 
-void SimulationWrapper::setInitialState(PlanetJSONReader<float>& reader, bool reset_simulation)
+void SimulationWrapper::setInitialState(CelestialObjectJSONReader<float>& reader, bool reset_simulation)
 {
     // initialize planets from reader
     InitialState = reader.get_planets();

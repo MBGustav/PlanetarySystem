@@ -62,6 +62,7 @@ namespace `Persistent Files(TO-DO)` {
 		+ ReadFile()
 		+ SaveFile()
 	}
+	
 
 	class JSONReader{
         - string filepath
@@ -81,6 +82,7 @@ namespace `Persistent Files(TO-DO)` {
 		+ get_data_as_vector()
     }
 
+	
 
     class ConfigFile{
         - CameraView
@@ -123,34 +125,46 @@ namespace `Persistent Files(TO-DO)` {
 
 
 		class GraphicsWrapper {
-		- shaderProgram;
-		- VBO, VAO;
-		- framebuffer;
-		- mainVAO, mainVBO;
-		- figureVAO, figureVBO;
-		- framebufferTexture ;
-		- Camera cam
+			- shaderProgram;
+			- VBO, VAO;
+			- framebuffer;
+			- mainVAO, mainVBO;
+			- figureVAO, figureVBO;
+			- framebufferTexture ;
+			- Camera cam
 
-	    + SetupCamera()
-		+ CameraViewPosition(x,y,z)
-		+ CameraViewRotate(x,y,z)
-    }
+			+ SetupCamera()
+			+ CameraViewPosition(x,y,z)
+			+ CameraViewRotate(x,y,z)
+		}
 	}
 
 	namespace gui {
+		class ImGuiWindowData{
+			- ShowWelcomeWindow
+			- ShowConfigurationWindow
+			- ShowSimulationWindow
+			- ShowAppFullscreen
+			- showPlanetOverlay
+		}
 
-    class ImguiLayer {
-	    - GLFWwindow* window
-	    - ImGuiWindowData data
-		- GraphicsWrapper *gfx
-        + ConfigWindow(ConfigFile)
-        + WelcomeWindow()
-        + SimulationWindow()
-	    + setup()
-	    + processEvents()
-	    + drawUI()
-	    + SimulationWindow()
-    }
+		class PlanetUIState {
+			- int selected;
+			- vec3 radius, mass, velocity;
+			- vec3 color
+    	}
+		class ImguiLayer {
+			- GLFWwindow* window
+			- ImGuiWindowData data
+			- GraphicsWrapper *gfx
+			+ ConfigWindow(ConfigFile)
+			+ WelcomeWindow()
+			+ SimulationWindow()
+			+ setup()
+			+ processEvents()
+			+ drawUI()
+			+ SimulationWindow()
+		}
 	}
 
     class SimulationCorp {
@@ -171,14 +185,16 @@ namespace `Persistent Files(TO-DO)` {
 
 	<<Library>> ExternalLibs
 
-    Application      --> ImguiLayer      : (Compose)
-    Application      --> SimulationCorp  : (Compose)
-	Application      --> GraphicsWrapper : (Compose)
+    Application      .. ImguiLayer      : (Compose)
+    Application      .. SimulationCorp  : (Compose)
+	Application      .. GraphicsWrapper : (Compose)
 	ImguiLayer       ..> GraphicsWrapper : (Renders)
     ImguiLayer       ..> ExternalLibs    : (Imports)
     ImguiLayer       ..> SimulationCorp  : (Control data)
 	GraphicsWrapper  ..> SimulationCorp  : (Import objects)
-
+	
+	JSONReader		 --|>  CelestialObjectJSONReader: (Inherit)
+	
 ```
 
 

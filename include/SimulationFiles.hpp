@@ -6,7 +6,7 @@
 #include <map>
 #include <filesystem>
 #include "CelestialObjectProperties.hpp"
-#include "PlanetJSONReader.hpp"
+#include "CelestialObjectJSONReader.hpp"
 #include <set>
 
 using std::string, std::vector, std::map, std::set;
@@ -75,7 +75,7 @@ std::vector<CelestialObjectProperties<float>> SimulationFiles::loadSimulation(co
         return {};
     }
     
-    PlanetJSONReader<float> reader(fullPath);
+    CelestialObjectJSONReader<float> reader(fullPath);
     
     return reader.get_planets();
 }

@@ -19,7 +19,7 @@
 #include "SimulationWrapper.hpp"
 #include "Logger.hpp"
 #include "SimulationFiles.hpp"
-#include "PlanetJSONReader.hpp"
+#include "CelestialObjectJSONReader.hpp"
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section, void* user_data);
 extern ImGuiDemoMarkerCallback      GImGuiDemoMarkerCallback;
 extern void*                        GImGuiDemoMarkerCallbackUserData;
@@ -83,7 +83,7 @@ namespace gui
     };
     
     
-    enum Options
+    enum OptionWindowSelection
     {
         SIMPLE_SIMULATION,
         THREE_BODY_PROBLEM,
@@ -138,7 +138,7 @@ namespace gui
     // ---------------------------------------------------------
     // Marked inline because they are implemented in a .hpp file
     inline void ImguiLayer::load_simulation(string filepath) {
-        PlanetJSONReader<float> reader("../" + filepath);
+        CelestialObjectJSONReader<float> reader("../" + filepath);
 
         sys_logger.simulation("Loading simulation from file: " + filepath);
         
@@ -280,7 +280,7 @@ namespace gui
     inline void ImguiLayer::WelcomeWindow()
     {
         // --- Persistent values ---
-        static Options selectedOption = SIMPLE_SIMULATION;
+        static OptionWindowSelection selectedOption = SIMPLE_SIMULATION;
         static std::string desired_sim = "simulations/simple_simulation.json";
         
         
@@ -296,7 +296,7 @@ namespace gui
             // --- Array de cards ---
             struct Card {
                 const char* name;
-                Options opt;
+                OptionWindowSelection opt;
                 const char* filepath;
             };
             

@@ -12,13 +12,13 @@
 #include <glm/glm.hpp>
 
 template <typename T>
-class PlanetJSONReader : public JSONReader {
+class CelestialObjectJSONReader : public JSONReader {
 public:
     std::vector<CelestialObjectProperties<T>> planets;
     std::vector<T> axis;
     std::vector<T> eccentricity;
     
-    PlanetJSONReader(const std::string &path) : JSONReader(path) {
+    CelestialObjectJSONReader(const std::string &path) : JSONReader(path) {
         parse_planets();
         parse_simulation_settings();
     }

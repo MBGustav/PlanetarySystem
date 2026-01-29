@@ -1,12 +1,12 @@
 
 #include "include/Application.hpp"
-#include "include/PlanetJSONReader.hpp"
+#include "include/CelestialObjectJSONReader.hpp"
 #include "include/SimulationFiles.hpp"
 using namespace std;
 
 void dbg_PlanetJSON()
 {
-PlanetJSONReader<float> reader("../simulations/and_another_json.json");
+CelestialObjectJSONReader<float> reader("../simulations/and_another_json.json");
 
     std::cout << "\n--- PARSED PLANETS ---\n";
     std::vector<CelestialObjectProperties<float>> my_planets = reader.get_planets();
