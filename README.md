@@ -1,15 +1,15 @@
 # Introduction
-Notre intention dans ce projet est d’associer des concepts d’organisation de l’architecture du code - avec l’utilisation, par exemple, de design pattern - avec la programmation orientée objet. Dans un premier temps, nous utiliserons des bibliothèques open-source comme [Imgui](https://github.com/ocornut/imgui) et [Glad](https://github.com/Dav1dde/glad). Cela permet même que le projet soit disponible pour différentes plates-formes de systèmes d’exploitation. 
+Notre intention dans ce projet est d’associer des concepts d’organisation de l’architecture du code - avec l’utilisation, par exemple, de design pattern - avec la programmation orientée objet. Dans un premier temps, nous utiliserons des bibliothèques open-source comme [Imgui](https://github.com/ocornut/imgui) et [Glad](https://github.com/Dav1dde/glad). Cela permet même que le projet soit disponible pour différentes plates-formes de systèmes d’exploitation.
 
 
 
 # date livraison - 26 janv
 ## Critéres de evaluation
-- Qualidade de codigo	
+- Qualidade de codigo
 	- boa construção
 	- evitar estilo de C
 	- comentaire -> documentation (dOxygen)s
-- Qualidade de Arquitetura 
+- Qualidade de Arquitetura
 - Qualidade de apresentação
 - Conjuntos de função
 	- funções complicadas de se realizar, trade-off
@@ -72,6 +72,16 @@ namespace `Persistent Files(TO-DO)` {
 		+ get_data_as_vector()
     }
 
+	class CelestialObjectJSONReader{
+        - string filepath
+        - map<char, cmd> dataMap
+        + file_exists()
+        + parse_content()
+		+ get_data_as_map()
+		+ get_data_as_vector()
+    }
+
+
     class ConfigFile{
         - CameraView
         - map<char, cmd> KeyboardHotKeys
@@ -99,28 +109,41 @@ namespace `Persistent Files(TO-DO)` {
 	    + run()
     }
 
-    class GraphicsWrapper {
+    namespace graphics {
+		class Camera {
+			- Position, Front
+			- Up, WorldUp, Target
+			- Pitch Yaw
+			+ updateVectors()
+			+ rotate()
+			+ zoom(dx, dy)
+			+ ComputeVisualScale(vector planets)
+			+ viewMatrix()
+		}
+
+
+		class GraphicsWrapper {
 		- shaderProgram;
 		- VBO, VAO;
 		- framebuffer;
 		- mainVAO, mainVBO;
 		- figureVAO, figureVBO;
 		- framebufferTexture ;
-		- 
+		- Camera cam
 
-
-
-	    + SetupCamera() (TODO)
-		+ CameraViewPosition(x,y,z) (TODO)
-		+ CameraViewRotate(x,y,z) (TODO)
+	    + SetupCamera()
+		+ CameraViewPosition(x,y,z)
+		+ CameraViewRotate(x,y,z)
     }
+	}
 
+	namespace gui {
 
     class ImguiLayer {
 	    - GLFWwindow* window
 	    - ImGuiWindowData data
 		- GraphicsWrapper *gfx
-        + ConfigWindow(ConfigFile) 
+        + ConfigWindow(ConfigFile)
         + WelcomeWindow()
         + SimulationWindow()
 	    + setup()
@@ -128,9 +151,10 @@ namespace `Persistent Files(TO-DO)` {
 	    + drawUI()
 	    + SimulationWindow()
     }
+	}
 
     class SimulationCorp {
-	    - vector~Planet~ planets
+	    - vector~CelestialObject~ planets
 	    - float gravity
 	    - float timeStep
 	    + updatePhysics()
@@ -154,7 +178,7 @@ namespace `Persistent Files(TO-DO)` {
     ImguiLayer       ..> ExternalLibs    : (Imports)
     ImguiLayer       ..> SimulationCorp  : (Control data)
 	GraphicsWrapper  ..> SimulationCorp  : (Import objects)
-	
+
 ```
 
 

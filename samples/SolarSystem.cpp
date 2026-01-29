@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
-#include <PlanetProperties.hpp>
+#include <CelestialObjectProperties.hpp>
 #include <vector>
 #include <Physics.hpp>
 
@@ -121,7 +121,7 @@ int main() {
     //creating planets 
     
         // ---- Planets ----
-    vector<PlanetProperties<float>> planets = {
+    vector<CelestialObjectProperties<float>> planets = {
         { {0,0,0}, {0,0,0}, {0,0,0}, 00.00465f, 1.0f, {1.0f, 0.8f, 0.2f}, "Sun" },
 
         { {0,0,0}, {0,0,0}, {0,0,0}, 1.63e-5f, 1.66e-7f,  {0.5f, 0.5f, 0.5f},  "Mercury" },

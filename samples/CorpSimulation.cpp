@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
-#include <PlanetProperties.hpp>
+#include <CelestialObjectProperties.hpp>
 #include <vector>
 
 using std::vector;
@@ -81,9 +81,9 @@ GLuint compileShader(GLenum type, const char* src) {
     return shader;
 }
 
-void apply_newton_law(vector<PlanetProperties<float>> &planets)
+void apply_newton_law(vector<CelestialObjectProperties<float>> &planets)
 {
-    PlanetProperties<float> *A, *B;
+    CelestialObjectProperties<float> *A, *B;
     glm::vec3 Force;
     float MA, MB, dist;
     const float G = 6.673e-2;
@@ -161,19 +161,19 @@ int main() {
     //     glm::vec3( 1.5f, 0.0f, 0.0f)
     // };
 
-    std::vector<PlanetProperties> planets;
+    std::vector<CelestialObjectProperties> planets;
 
-    PlanetProperties p1(glm::vec3(-0.5f, 0.0f, 0.0f),
+    CelestialObjectProperties p1(glm::vec3(-0.5f, 0.0f, 0.0f),
                         glm::vec3(0,0,0),
                         glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
                         "P1");
     
-    PlanetProperties p2(glm::vec3(0.5f, 0.0f, 0.0f),
+    CelestialObjectProperties p2(glm::vec3(0.5f, 0.0f, 0.0f),
                         glm::vec3(0,0,0),
                         glm::vec3(0,0,0), 1.0f, 1.0f, glm::vec3(0,0,0),
                         "P2");
 
-    PlanetProperties p3(glm::vec3(1.0f, 3.0f, 0.0f),
+    CelestialObjectProperties p3(glm::vec3(1.0f, 3.0f, 0.0f),
                         glm::vec3(0,0,0),
                         glm::vec3(0,0,0), 1.0f, 10.0f, glm::vec3(0,0,0),
                         "P");
@@ -219,7 +219,7 @@ int main() {
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glm::vec3 pos = planets[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
+            std::cout << "CelestialObject Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
         }
         for(auto &itr : planets) itr.update(deltaTime);
 

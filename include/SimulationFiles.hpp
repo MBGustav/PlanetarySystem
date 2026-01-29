@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include <filesystem>
-#include "PlanetProperties.hpp"
+#include "CelestialObjectProperties.hpp"
 #include "PlanetJSONReader.hpp"
 #include <set>
 
@@ -39,7 +39,7 @@ class SimulationFiles
     std::vector<std::string> availableSimulations() const;
     
     // Carrega uma simulação específica baseada no nome escolhido
-    std::vector<PlanetProperties<float>> loadSimulation(const std::string& filename) const;
+    std::vector<CelestialObjectProperties<float>> loadSimulation(const std::string& filename) const;
     
     
     
@@ -66,7 +66,7 @@ std::vector<std::string> SimulationFiles::availableSimulations() const {
 }
 
 
-std::vector<PlanetProperties<float>> SimulationFiles::loadSimulation(const std::string& filename) const {
+std::vector<CelestialObjectProperties<float>> SimulationFiles::loadSimulation(const std::string& filename) const {
     
     fs::path fullPath = fs::path(SIMULATION_PATH) / filename;
     

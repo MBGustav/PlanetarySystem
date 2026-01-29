@@ -1,10 +1,10 @@
 {
     "planets": [
         {"name":"Sun",     "mass":1.0, "radius":1.0,"color":[1.0,0.9,0.2]},
-        {"name":"Planet 1","mass":0.05,"radius":0.3,"color":[0.5,0.5,0.8]},
-        {"name":"Planet 2","mass":0.07,"radius":0.3,"color":[0.8,0.5,0.5]},
-        {"name":"Planet 3","mass":0.1, "radius":0.4,"color":[0.3,0.8,0.3]},
-        {"name":"Planet 4","mass":0.2, "radius":0.5,"color":[0.5,0.5,0.5]}
+        {"name":"CelestialObject 1","mass":0.05,"radius":0.3,"color":[0.5,0.5,0.8]},
+        {"name":"CelestialObject 2","mass":0.07,"radius":0.3,"color":[0.8,0.5,0.5]},
+        {"name":"CelestialObject 3","mass":0.1, "radius":0.4,"color":[0.3,0.8,0.3]},
+        {"name":"CelestialObject 4","mass":0.2, "radius":0.5,"color":[0.5,0.5,0.5]}
     ],
     "simulation_settings": [
         {

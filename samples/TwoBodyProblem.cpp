@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
-#include <PlanetProperties.hpp>
+#include <CelestialObjectProperties.hpp>
 #include <vector>
 #include <Physics.hpp>
 
@@ -171,7 +171,7 @@ int main() {
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glm::vec3 pos = planets[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
+            std::cout << "CelestialObject Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
         }
         
         glfwSwapBuffers(window);

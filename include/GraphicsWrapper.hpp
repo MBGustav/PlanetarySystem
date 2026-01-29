@@ -4,8 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
-#include "PlanetProperties.hpp"
-#include "Planet.hpp"
+#include "CelestialObjectProperties.hpp"
+#include "CelestialObject.hpp"
 #include "imgui.h"
 #include "Logger.hpp"
 
@@ -74,7 +74,7 @@ namespace graphics {
             return r * VisualScale;
         }
 
-        void ComputeVisualScale(const std::vector<PlanetProperties<float>>& planets) {
+        void ComputeVisualScale(const std::vector<CelestialObjectProperties<float>>& planets) {
             float maxDist = 0.0f;
             for (const auto& p : planets) {
                 maxDist = std::max(maxDist, glm::length(p.get_position()));
@@ -287,7 +287,7 @@ namespace graphics {
         }
         
         
-        void RenderPlanets(const std::vector<PlanetProperties<float>> &planets,
+        void RenderPlanets(const std::vector<CelestialObjectProperties<float>> &planets,
             float viewportWidth,
             float viewportHeight)
             {
@@ -341,7 +341,7 @@ namespace graphics {
                 glUseProgram(0);
             }
             
-            void RenderToFramebuffer(const std::vector<PlanetProperties<float>>& planets)
+            void RenderToFramebuffer(const std::vector<CelestialObjectProperties<float>>& planets)
             {
                 if (framebuffer == 0) {
                     std::cerr << "Framebuffer not initialized\n";

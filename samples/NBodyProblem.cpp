@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
-#include <PlanetProperties.hpp>
+#include <CelestialObjectProperties.hpp>
 #include <vector>
 
 using std::vector;
@@ -83,12 +83,12 @@ GLuint compileShader(GLenum type, const char* src) {
     return shader;
 }
 
-/*void apply_newton_law(std::vector<PlanetProperties>& planets)
+/*void apply_newton_law(std::vector<CelestialObjectProperties<float>>& planets)
 {
     if((planets[0].get_position()-planets[1].get_position()).length() > 1e-2f){
         // Use references (NO copies)
-        PlanetProperties& p1 = planets[0];
-        PlanetProperties& p2 = planets[1];
+        CelestialObjectProperties<float>& p1 = planets[0];
+        CelestialObjectProperties<float>& p2 = planets[1];
 
         // === 1. Update positions (Velocity Verlet) ===
         p1.set_position(
@@ -131,7 +131,7 @@ GLuint compileShader(GLenum type, const char* src) {
 } */
 
 
-void compute_accelerations(std::vector<CelestialObjectProperties>& planets) {
+void compute_accelerations(std::vector<CelestialObjectProperties<float>>& planets) {
     size_t N = planets.size();
 
     // Reset accelerations
@@ -150,7 +150,7 @@ void compute_accelerations(std::vector<CelestialObjectProperties>& planets) {
     }
 }
 
-void velocity_verlet(std::vector<CelestialObjectProperties>& planets, float dt) {
+void velocity_verlet(std::vector<CelestialObjectProperties<float>>& planets, float dt) {
     size_t N = planets.size();
 
     // 1. Update positions
@@ -171,7 +171,7 @@ void velocity_verlet(std::vector<CelestialObjectProperties>& planets, float dt) 
     }
 }
 
-glm::vec3 compute_center_of_mass(const std::vector<CelestialObjectProperties>& planets) {
+glm::vec3 compute_center_of_mass(const std::vector<CelestialObjectProperties<float>>& planets) {
     glm::vec3 COM(0.0f);
     float total_mass = 0.0f;
     for (const auto& p : planets) {
@@ -181,7 +181,7 @@ glm::vec3 compute_center_of_mass(const std::vector<CelestialObjectProperties>& p
     return COM / total_mass;
 }
 
-void init_orbital_velocities(std::vector<CelestialObjectProperties>& planets) {
+void init_orbital_velocities(std::vector<CelestialObjectProperties<float>>& planets) {
     glm::vec3 COM = compute_center_of_mass(planets);
 
     // Total mass excluding each planet (for simple approximation)
@@ -241,7 +241,7 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     
-    vector<CelestialObjectProperties> planets;
+    vector<CelestialObjectProperties<float>> planets;
     planets.emplace_back(glm::vec3(-1,0,0), glm::vec3(0),glm::vec3(0), 0.1f, 3.0f, glm::vec3(1,0,0), "P1");
     planets.emplace_back(glm::vec3( 1,0,0), glm::vec3(0),glm::vec3(0), 0.05f, 1.0f, glm::vec3(0,1,0), "P2");
     planets.emplace_back(glm::vec3( 0,1,0), glm::vec3(0),glm::vec3(0), 0.07f, 2.0f, glm::vec3(0,0,1), "P3");
@@ -290,7 +290,7 @@ int main() {
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glm::vec3 pos = planets[i].get_position();
-            std::cout << "Planet Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
+            std::cout << "CelestialObject Pos: (" << pos.x << ", "<< pos.y<< ", " << pos.z <<")\n";
         }
         
         glfwSwapBuffers(window);

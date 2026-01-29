@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 #include <iostream>
-#include "PlanetProperties.hpp"
+#include "CelestialObjectProperties.hpp"
 
 #include "SimulationFiles.hpp"
 #include "Physics.hpp"
@@ -23,9 +23,9 @@ class SimulationWrapper
 {
     private:
     
-    std::vector<PlanetProperties<float>> planets;
+    std::vector<CelestialObjectProperties<float>> planets;
     float delta_time;
-    std::vector<PlanetProperties<float>> InitialState;    
+    std::vector<CelestialObjectProperties<float>> InitialState;    
     float accumulator = 0.0f;
     const float FIXED_DT = 0.005f; // 5ms
     
@@ -41,15 +41,15 @@ class SimulationWrapper
     
     void velocity_verlet(float dt);
     
-    void init_elliptical_orbit_visviva(PlanetProperties<float>& p1, PlanetProperties<float>& p2, float a, float e, float true_anomaly = 0.0f);
+    void init_elliptical_orbit_visviva(CelestialObjectProperties<float>& p1, CelestialObjectProperties<float>& p2, float a, float e, float true_anomaly = 0.0f);
     
-    void loadWithEccentricity(std::vector<PlanetProperties<float>>& planets, const std::vector<float>& axis, const std::vector<float>& eccentricity, int planet_refId);
+    void loadWithEccentricity(std::vector<CelestialObjectProperties<float>>& planets, const std::vector<float>& axis, const std::vector<float>& eccentricity, int planet_refId);
     
     bool bound_check(size_t idx) const {return idx < planets.size() && planets.size() > 0;}
     
     public:
     // Constructor & Destructor
-    SimulationWrapper(vector<PlanetProperties<float>> initial_planets,  vector<float> axis, vector<float> eccentricity, int planet_refId=0,float dt=0.01f);
+    SimulationWrapper(vector<CelestialObjectProperties<float>> initial_planets,  vector<float> axis, vector<float> eccentricity, int planet_refId=0,float dt=0.01f);
     SimulationWrapper();
     
     ~SimulationWrapper();
@@ -57,12 +57,12 @@ class SimulationWrapper
     void reset_simulation();
     
     
-    void setInitialState(std::vector<PlanetProperties<float>> v_planets, bool reset_simulation);
+    void setInitialState(std::vector<CelestialObjectProperties<float>> v_planets, bool reset_simulation);
     void setInitialState(PlanetJSONReader<float>& reader, bool reset_simulation);
     void UpdateSimulation(float frameTime, float speedMultiplier = 1.0f);
     const std::vector<string>& getPlanetNames() const;
-    const std::vector<PlanetProperties<float>>& getPlanets() const {return planets;}
-    PlanetProperties<float>& PlanetByIdx(size_t idx);
+    const std::vector<CelestialObjectProperties<float>>& getPlanets() const {return planets;}
+    CelestialObjectProperties<float>& PlanetByIdx(size_t idx);
     
     
     float getDeltaTime() const  { return this->delta_time; }
@@ -114,7 +114,7 @@ void SimulationWrapper::data_normalization()
     // g_normalized = G_CONSTANT<float>;
 }
 
-void SimulationWrapper::setInitialState(std::vector<PlanetProperties<float>> v_planets, bool reset_simulation)
+void SimulationWrapper::setInitialState(std::vector<CelestialObjectProperties<float>> v_planets, bool reset_simulation)
 {
     InitialState = v_planets;
     // data_normalization();
@@ -213,7 +213,7 @@ void  SimulationWrapper::velocity_verlet(float dt)
 }
 
 
-void SimulationWrapper::init_elliptical_orbit_visviva(PlanetProperties<float>& p1, PlanetProperties<float>& p2, float a, float e, float true_anomaly)
+void SimulationWrapper::init_elliptical_orbit_visviva(CelestialObjectProperties<float>& p1, CelestialObjectProperties<float>& p2, float a, float e, float true_anomaly)
 {
     float m1 = p1.get_mass();
     float m2 = p2.get_mass();
@@ -242,7 +242,7 @@ void SimulationWrapper::init_elliptical_orbit_visviva(PlanetProperties<float>& p
     p2.set_acceleration(-G_CONSTANT<float> * m1 * r12 / dist3);
 }
 
-PlanetProperties<float>& SimulationWrapper::PlanetByIdx(size_t idx) 
+CelestialObjectProperties<float>& SimulationWrapper::PlanetByIdx(size_t idx) 
 {
     if(!bound_check(idx)) {
         throw std::out_of_range("PlanetByIdx: Index out of range");
@@ -264,14 +264,14 @@ void SimulationWrapper::reset_simulation()
 
 
 
-void SimulationWrapper::loadWithEccentricity(std::vector<PlanetProperties<float>>& planets, const std::vector<float>& axis, const std::vector<float>& eccentricity, int planet_refId)
+void SimulationWrapper::loadWithEccentricity(std::vector<CelestialObjectProperties<float>>& planets, const std::vector<float>& axis, const std::vector<float>& eccentricity, int planet_refId)
 {
     for(int i=1;i<planets.size();i++){
         init_elliptical_orbit_visviva(planets[planet_refId], planets[i], axis[i], eccentricity[i]);
     }
 }
 
-SimulationWrapper::SimulationWrapper(vector<PlanetProperties<float>> initial_planets,  vector<float> axis, vector<float> eccentricity, int planet_refId,float dt) :
+SimulationWrapper::SimulationWrapper(vector<CelestialObjectProperties<float>> initial_planets,  vector<float> axis, vector<float> eccentricity, int planet_refId,float dt) :
 delta_time(dt),
 planets(initial_planets),
 InitialState(initial_planets)

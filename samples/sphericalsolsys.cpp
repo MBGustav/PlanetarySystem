@@ -6,7 +6,7 @@
 #include <vector>
 #include <cmath>
 
-#include <PlanetProperties.hpp>
+#include <CelestialObjectProperties.hpp>
 #include <Physics.hpp>
 
 using std::vector;
@@ -199,10 +199,6 @@ int main() {
         for (auto& p : planets) {
             glm::mat4 model = glm::translate(glm::mat4(1.0f), p.get_position());
             model = glm::scale(model, glm::vec3(p.get_radius()*1000.0f)); // scale for visibility
-            /*float r = (p.get_name()=="Sun") ? p.get_radius()*radiusScaleSun : p.get_radius()*radiusScalePlanets;
-            glm::vec3 pos = p.get_position() * DISTANCE_SCALE;
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
-            model = glm::scale(model, glm::vec3(r));*/
 
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram,"model"),1,GL_FALSE,&model[0][0]);
             glUniform3fv(glGetUniformLocation(shaderProgram,"color"),1,&p.get_color()[0]);

@@ -6,7 +6,7 @@
 #include <vector>
 #include <cmath>
 
-#include <PlanetProperties.hpp>
+#include <CelestialObjectProperties.hpp>
 #include <Physics.hpp>
 
 // ================= CAMERA =================
@@ -86,7 +86,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
     glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800,600,"Planet Simulation",nullptr,nullptr);
+    GLFWwindow* window = glfwCreateWindow(800,600,"CelestialObject Simulation",nullptr,nullptr);
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glEnable(GL_DEPTH_TEST);

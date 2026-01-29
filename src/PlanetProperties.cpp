@@ -1,2 +1,2 @@
 
-#include "PlanetProperties.hpp"
+#include "CelestialObjectProperties.hpp"

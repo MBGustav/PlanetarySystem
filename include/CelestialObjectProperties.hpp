@@ -3,23 +3,23 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
-#include "Planet.hpp"
+#include "CelestialObject.hpp"
 #include "Camera.hpp"
 #include <glad/glad.h>
 
-// PlanetProperties adds extra features (name, rendering) to Planet
+// CelestialObjectProperties adds extra features (name, rendering) to CelestialObject
 
 
 template<typename T>
-class PlanetProperties : public Planet<T>
+class CelestialObjectProperties : public CelestialObject<T>
 {
 private:
     std::string name;
 
 public:
     // Default constructor
-    PlanetProperties()
-        : Planet<T>(
+    CelestialObjectProperties()
+        : CelestialObject<T>(
               glm::tvec3<T>(0,0,0),
               glm::tvec3<T>(0,0,0),
               glm::tvec3<T>(0,0,0),
@@ -30,9 +30,9 @@ public:
           name("Unnamed")
     {}
 
-    // Constructor copy of Planet
-    PlanetProperties(const Planet<T>& planet, const std::string& name = "Unnamed")
-        : PlanetProperties(planet.get_position(),
+    // Constructor copy of CelestialObject
+    CelestialObjectProperties(const CelestialObject<T>& planet, const std::string& name = "Unnamed")
+        : CelestialObjectProperties(planet.get_position(),
              planet.get_velocity(),
              planet.get_acceleration(),
              planet.get_radius(),
@@ -41,7 +41,7 @@ public:
              name){}
 
     // Full constructor
-    PlanetProperties(
+    CelestialObjectProperties(
         const glm::tvec3<T>& position,
         const glm::tvec3<T>& velocity,
         const glm::tvec3<T>& acceleration,
@@ -50,7 +50,7 @@ public:
         const glm::tvec3<T>& color,
         const std::string& name
     )
-    : Planet<T>(position, velocity, acceleration, radius, mass, color),
+    : CelestialObject<T>(position, velocity, acceleration, radius, mass, color),
       name(name)
     {}
 
@@ -59,9 +59,9 @@ public:
 
     void set_name(const std::string& name) { this->name = name; }
 
-    // Convert to base Planet<T>
-    Planet<T> toPlanet() const {
-        return Planet<T>(
+    // Convert to base CelestialObject<T>
+    CelestialObject<T> toPlanet() const {
+        return CelestialObject<T>(
             this->get_position(),
             this->get_velocity(),
             this->get_acceleration(),
@@ -72,29 +72,29 @@ public:
     }
 
 
-    friend std::ostream& operator<<(std::ostream& os, const PlanetProperties<T>& Planet);
+    friend std::ostream& operator<<(std::ostream& os, const CelestialObjectProperties<T>& CelestialObject);
 
 
-    ~PlanetProperties() = default;
+    ~CelestialObjectProperties() = default;
 };
 
 
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const PlanetProperties<T>& Planet)
+std::ostream& operator<<(std::ostream& os, const CelestialObjectProperties<T>& CelestialObject)
 {
-    auto mass  = Planet.get_mass();
-    auto pos   = Planet.get_position();
-    auto vel   = Planet.get_velocity();
-    auto acc   = Planet.get_acceleration();
-    auto color = Planet.get_color(); 
-    auto force = Planet.get_force(); 
+    auto mass  = CelestialObject.get_mass();
+    auto pos   = CelestialObject.get_position();
+    auto vel   = CelestialObject.get_velocity();
+    auto acc   = CelestialObject.get_acceleration();
+    auto color = CelestialObject.get_color(); 
+    auto force = CelestialObject.get_force(); 
 
 
-    os << "Planet Informations: \n";
-    os <<"name:                " << Planet.get_name()         << std::endl;
-    os <<"mass:                " << Planet.get_mass()         << std::endl;
-    os <<"radius:              " << Planet.get_radius()       << std::endl;
-    os <<"Is fixed:            " << Planet.is_fixed()         << std::endl;
+    os << "CelestialObject Informations: \n";
+    os <<"name:                " << CelestialObject.get_name()         << std::endl;
+    os <<"mass:                " << CelestialObject.get_mass()         << std::endl;
+    os <<"radius:              " << CelestialObject.get_radius()       << std::endl;
+    os <<"Is fixed:            " << CelestialObject.is_fixed()         << std::endl;
     os <<"Color:               " << color.x << ", " << color.y << ", " << color.z << std::endl;
     os <<"force:               " << force.x << ", " << force.y << ", " << force.z << std::endl;
     os <<"position(x,y,z):     " << pos.x   << ", " << pos.y   << ", " << pos.z << std::endl;

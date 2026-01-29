@@ -110,7 +110,7 @@ namespace gui
         void ConfigurationWindow(bool *page_open);
         void SimulationWindow();
         
-        void DrawPlanetOverlay(PlanetProperties<float>& selected_planet);
+        void DrawPlanetOverlay(CelestialObjectProperties<float>& selected_planet);
         
         public:
         
@@ -423,23 +423,23 @@ namespace gui
         ImGui::End();
     }
     
-    void  ImguiLayer::DrawPlanetOverlay(PlanetProperties<float>& planet){
+    void  ImguiLayer::DrawPlanetOverlay(CelestialObjectProperties<float>& planet){
         
         
-        static PlanetProperties<float> prev_state; // Store previous state for comparison
+        static CelestialObjectProperties<float> prev_state; // Store previous state for comparison
         static bool has_backup = false;
         
         if(!has_backup) {
             prev_state = planet; // Backup initial state
             has_backup = true;
         }
-        ImGui::Begin("Planet Configuration", nullptr,
+        ImGui::Begin("CelestialObject Configuration", nullptr,
             ImGuiWindowFlags_AlwaysAutoResize |
             ImGuiWindowFlags_NoCollapse | 
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoResize);
             
-            ImGui::Text("Planet: %s", planet.get_name().c_str());
+            ImGui::Text("CelestialObject: %s", planet.get_name().c_str());
             ImGui::Separator();
             // --- Position ---
             glm::vec3 pos = planet.get_position();
@@ -457,21 +457,21 @@ namespace gui
             float mass = planet.get_mass();
             if (ImGui::DragFloat("Mass", &mass, 0.1f, 0.001f, 10000.0f)) {
                 planet.set_mass(mass);
-                sys_logger.simulation("Planet " + planet.get_name() + " mass set to " + std::to_string(mass));
+                sys_logger.simulation("CelestialObject " + planet.get_name() + " mass set to " + std::to_string(mass));
             }
             
             // --- Radius ---
             float radius = planet.get_radius();
             if (ImGui::DragFloat("Radius", &radius, 0.01f, 0.01f, 100.0f)) {
                 planet.set_radius(radius);
-                sys_logger.simulation("Planet " + planet.get_name() + " radius set to " + std::to_string(radius));
+                sys_logger.simulation("CelestialObject " + planet.get_name() + " radius set to " + std::to_string(radius));
             }
             
             // --- Fixed toggle ---
             bool fixed = planet.is_fixed();
             if (ImGui::Checkbox("Fixed Position", &fixed)) {
                 planet.set_fixed(fixed);
-                sys_logger.simulation("Planet " + planet.get_name() + (fixed ? " set to fixed." : " set to movable."));
+                sys_logger.simulation("CelestialObject " + planet.get_name() + (fixed ? " set to fixed." : " set to movable."));
             }
             static ImVec4 color;
             // Inicializa color com o valor do planeta na primeira chamada
@@ -496,7 +496,7 @@ namespace gui
                     planet.set_radius(prev_state.get_radius());
                     planet.set_fixed(prev_state.is_fixed());
                     planet.set_color(prev_state.get_color());
-                    sys_logger.simulation("Planet " + planet.get_name() + " configuration reset to previous state.");
+                    sys_logger.simulation("CelestialObject " + planet.get_name() + " configuration reset to previous state.");
                 }
                 
                 // Close button
@@ -545,7 +545,7 @@ namespace gui
                 
                 
                 if (WMData.showPlanetOverlay && selectedPlanetIdx != -1){
-                    PlanetProperties<float>& planet = simulation->PlanetByIdx(selectedPlanetIdx);
+                    CelestialObjectProperties<float>& planet = simulation->PlanetByIdx(selectedPlanetIdx);
                     DrawPlanetOverlay(planet);
                 }
                 

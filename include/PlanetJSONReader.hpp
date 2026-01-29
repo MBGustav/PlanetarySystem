@@ -7,14 +7,14 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include "PlanetProperties.hpp"
+#include "CelestialObjectProperties.hpp"
 #include "JSONReader.hpp"
 #include <glm/glm.hpp>
 
 template <typename T>
 class PlanetJSONReader : public JSONReader {
 public:
-    std::vector<PlanetProperties<T>> planets;
+    std::vector<CelestialObjectProperties<T>> planets;
     std::vector<T> axis;
     std::vector<T> eccentricity;
     
@@ -23,7 +23,7 @@ public:
         parse_simulation_settings();
     }
     
-    std::vector<PlanetProperties<T>> get_planets() const {
+    std::vector<CelestialObjectProperties<T>> get_planets() const {
         return planets;
     }
 
@@ -121,8 +121,8 @@ private:
         return result;
     }
 
-    static PlanetProperties<T> parse_planet_object(const std::string &obj_str) {
-        PlanetProperties<T> planet;
+    static CelestialObjectProperties<T> parse_planet_object(const std::string &obj_str) {
+        CelestialObjectProperties<T> planet;
         std::map<std::string, std::string> temp_map;
         
         char c;
@@ -166,8 +166,8 @@ private:
     }
 
 public:
-    static std::vector<PlanetProperties<T>> parse_planets_array(const std::string &array_str) {
-        std::vector<PlanetProperties<T>> planets;
+    static std::vector<CelestialObjectProperties<T>> parse_planets_array(const std::string &array_str) {
+        std::vector<CelestialObjectProperties<T>> planets;
         int brace_count = 0;
         std::string current_obj;
         for (char c : array_str) {

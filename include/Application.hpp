@@ -7,7 +7,7 @@
 #include "SimulationWrapper.hpp"
 #include "GraphicsWrapper.hpp"
 #include "Logger.hpp"
-#include "PlanetProperties.hpp"
+#include "CelestialObjectProperties.hpp"
 // imgui.h is included inside ImguiLayer.hpp, but can be included here if needed
 // #include "imgui.h" 
 
@@ -83,8 +83,8 @@ void Application::run()
         gfx.RenderToFramebuffer(simWrapper.getPlanets());
 
         //changing planets positions
-        std::vector<PlanetProperties<float>> planets= simWrapper.getPlanets();
-        for (std::vector<PlanetProperties<float>>::iterator planet=planets.begin();planet!=planets.end();planet++){
+        std::vector<CelestialObjectProperties<float>> planets= simWrapper.getPlanets();
+        for (std::vector<CelestialObjectProperties<float>>::iterator planet=planets.begin();planet!=planets.end();planet++){
             (*planet).set_position((*planet).get_position()+0.5f);
         }
 
