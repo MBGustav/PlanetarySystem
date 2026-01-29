@@ -42,8 +42,8 @@ struct SimFileInfo {
 namespace gui
 {
     // Window dimensions
-    constexpr int WIDTH = 800;
-    constexpr int HEIGHT = 600;
+    constexpr int WIDTH = 1200;
+    constexpr int HEIGHT = 800;
     constexpr char VIEW_TITLE[] = "Simulation Viewer";    
     
     static float MIN_RADIUS = 0.1f;
@@ -60,7 +60,7 @@ namespace gui
     struct ImGuiWindowData {
         bool ShowWelcomeWindow       = true; //TODO: set to true to show at start
         bool ShowConfigurationWindow = false;
-        bool ShowSimulationWindow    = true;
+        bool ShowSimulationWindow    = false;
         bool ShowAppFullscreen       = false;
         bool showPlanetOverlay       = false;
         // About Data import for simulation
@@ -138,10 +138,10 @@ namespace gui
     // ---------------------------------------------------------
     // Marked inline because they are implemented in a .hpp file
     inline void ImguiLayer::load_simulation(string filepath) {
-        sys_logger.debug("Loading simulation via ImguiLayer");
         PlanetJSONReader<float> reader("../" + filepath);
-        
 
+        sys_logger.simulation("Loading simulation from file: " + filepath);
+        
         // Load the the file and set the simulation state
         simulation->setInitialState(reader, true);
         
@@ -279,7 +279,10 @@ namespace gui
     
     inline void ImguiLayer::WelcomeWindow()
     {
+        // --- Persistent values ---
         static Options selectedOption = SIMPLE_SIMULATION;
+        static std::string desired_sim = "simulations/simple_simulation.json";
+        
         
         if(ImGui::Begin("Welcome", &WMData.ShowWelcomeWindow, ImGuiWindowFlags_AlwaysAutoResize))
         {
@@ -289,43 +292,74 @@ namespace gui
             ImGui::Spacing();
             
             ImGui::Text("Choose a simulation mode:");
-            ImGui::RadioButton("Simple Simulation", (int*)&selectedOption, SIMPLE_SIMULATION);
-            ImGui::RadioButton("Solar System Simulation" , (int*)&selectedOption, SOLAR_SYSTEM_SIMULATION);
-            ImGui::RadioButton("3 Body Problem" , (int*)&selectedOption, THREE_BODY_PROBLEM);
-            // ImGui::RadioButton("N Body Simulation" , (int*)&selectedOption, N_BODY_SIMULATION);
             
+            // --- Array de cards ---
+            struct Card {
+                const char* name;
+                Options opt;
+                const char* filepath;
+            };
             
+            // TODO: join this in SimulationFiles class
+            Card cards[] = {
+                {"Simple Simulation",       SIMPLE_SIMULATION,        "simulations/simple_simulation.json"},
+                {"Solar System Simulation", SOLAR_SYSTEM_SIMULATION,  "simulations/solar_system.json"},
+                {"3 Body Problem",          THREE_BODY_PROBLEM,       "simulations/three_body_problem.json"},
+                {"2 Body Problem",          N_BODY_SIMULATION,        "simulations/two_body_problem.json"}
+            };
+            
+            ImVec2 window_size = ImGui::GetWindowSize(); // Center buttons
+            
+            // --- Loop pelos cards ---
+            for (auto& card : cards) {
+                ImVec4 bgColor = (selectedOption == card.opt)
+                ? ImVec4(0.2f,0.6f,0.9f,0.9f)   // BLUE
+                : ImVec4(0.1f,0.1f,0.15f,1.0f); // DARK
+                
+                ImGui::PushStyleColor(ImGuiCol_Button, bgColor);
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f,0.6f,0.9f,1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f,0.4f,0.7f,1.0f));
+                
+                ImGui::SetCursorPosX((window_size.x - 300)/2);
+                
+                if (ImGui::Button(card.name, ImVec2(300,50))) {
+                    selectedOption = card.opt;    // atualiza seleção
+                    desired_sim = card.filepath;  // atualiza simulação desejada
+                }
+                
+                ImGui::PopStyleColor(3);
+                ImGui::Spacing();
+            }
             
             ImGui::Spacing();
+            ImGui::Separator();
             ImGui::Spacing();
             
-            if (ImGui::Button("Start / Open")) {
+            // --- Botão Start ---
+            ImGui::SetCursorPosX((window_size.x - 160)/2);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f,0.8f,0.2f,0.9f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f,0.9f,0.2f,1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f,0.6f,0.1f,1.0f));
+            
+
+            if (ImGui::Button("Start Simulation", ImVec2(160,50))) {
                 WMData.ShowWelcomeWindow = false;
                 WMData.ShowSimulationWindow = true;
-                switch (selectedOption)
-                {
-                    case SIMPLE_SIMULATION:
-                    load_simulation("simulations/simple_simulation.json");
-                    break;
-                    
-                    case THREE_BODY_PROBLEM:
-                    load_simulation("simulations/three_body_problem.json");
-                    break;
-                    case SOLAR_SYSTEM_SIMULATION:
-                    load_simulation("simulations/and_another_json.json");
-                    break;
-                    case N_BODY_SIMULATION:
-                    // load_simulation("n_body_simulation.json");
-                    break;
-                    default:
-                    WMData.ShowWelcomeWindow = true;
-                    WMData.ShowSimulationWindow = false;
-                    break;
+                
+                if (!desired_sim.empty()) {
+                    load_simulation(desired_sim); // Load Simulation
+                } else {
+                    std::cerr << "Error: No simulation selected!" << std::endl;
                 }
             }
-        }
+            
+            ImGui::PopStyleColor(3);
+            
+        } // End ImGui::Begin
         ImGui::End();
     }
+    
+    
     
     inline void ImguiLayer::ConfigurationWindow(bool *page_open)
     {
@@ -394,7 +428,7 @@ namespace gui
         
         static PlanetProperties<float> prev_state; // Store previous state for comparison
         static bool has_backup = false;
-
+        
         if(!has_backup) {
             prev_state = planet; // Backup initial state
             has_backup = true;
@@ -453,7 +487,7 @@ namespace gui
                     color.z * 255.0f));
                 }
                 ImGui::Separator();
-
+                
                 
                 if (ImGui::Button("Reset Configuration")) {
                     planet.set_position(prev_state.get_position());
@@ -486,11 +520,20 @@ namespace gui
                 bool valuesChanged = true;
                 
                 
+                if (ImGui::IsWindowHovered() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+                    sys_logger.debug("Rotating camera based on mouse drag");
+                    ImVec2 delta = ImGui::GetIO().MouseDelta;
+                    gfx->camera.rotate(delta.x, -delta.y);
+                }
+                
+                // Zoom com scroll
+                gfx->camera.zoom(ImGui::GetIO().MouseWheel);
+                
                 
                 // simulation->setDeltaTime(0.001f); // assuming 60 FPS base
                 
                 if (!isPaused){
-                    simulation->UpdateSimulation(0.001f, timeScale);
+                    simulation->UpdateSimulation(0.001f, timeScale*timeScale);
                 }
                 
                 
@@ -582,7 +625,6 @@ namespace gui
                         rotationChanged |= ImGui::DragFloat3("Position", &(gfx->camera.Position[0]), 0.1f);
                         rotationChanged |= ImGui::DragFloat("Yaw", &(gfx->camera.Yaw), 0.5f);
                         rotationChanged |= ImGui::SliderFloat("Pitch", &(gfx->camera.Pitch), -89.0f, 89.0f);
-                        rotationChanged |= ImGui::SliderFloat("Zoom (FOV)", &(gfx->camera.Fov), 1.0f, 120.0f);
                         
                         
                         if (rotationChanged) {
@@ -722,7 +764,7 @@ namespace gui
                         if (!logBuffer.empty()) {
                             ImGui::TextUnformatted(logBuffer.c_str());
                             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-                                ImGui::SetScrollHereY(1.0f);
+                            ImGui::SetScrollHereY(1.0f);
                         } else {
                             ImGui::TextDisabled("No simulation logs yet.");
                         }

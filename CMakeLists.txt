@@ -81,16 +81,7 @@ ${CMAKE_DL_LIBS}
 ########################################################
 # Samples for testing purposes
 ########################################################
-find_program(VALGRIND_PROGRAM valgrind)
-if(VALGRIND_PROGRAM)
-set(VALGRIND_COMMAND "${VALGRIND_PROGRAM}" CACHE STRING "Valgrind executable")
-add_custom_target(valgrind
-COMMAND ${VALGRIND_COMMAND} --leak-check=full --show-leak-kinds=all
-./${PROJECT_NAME}
-DEPENDS ${PROJECT_NAME}
-COMMENT "Running Valgrind memory profiler..."
-)
-endif()
+
 
 set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
 
@@ -106,12 +97,12 @@ set("SAMPLES_DIR" "${CMAKE_CURRENT_SOURCE_DIR}/samples")
 #)
 
 # TwoBodyProblem sample
-# add_executable(TwoBodyProblem "${SAMPLES_DIR}/TwoBodyProblem.cpp")
-# target_link_libraries(TwoBodyProblem PRIVATE common_libs)
+add_executable(TwoBodyProblem "${SAMPLES_DIR}/TwoBodyProblem.cpp")
+target_link_libraries(TwoBodyProblem PRIVATE common_libs)
 
-# # NBodyProblem sample
-# #add_executable(NBodyProblem "${SAMPLES_DIR}/NBodyProblem.cpp")
-# #target_link_libraries(NBodyProblem PRIVATE common_libs)
+# NBodyProblem sample
+add_executable(NBodyProblem "${SAMPLES_DIR}/NBodyProblem.cpp")
+target_link_libraries(NBodyProblem PRIVATE common_libs)
 
 # # SolarSystem sample
 add_executable(SolarSystem "${SAMPLES_DIR}/SolarSystem.cpp")
@@ -122,5 +113,5 @@ target_link_libraries(SolarSystem PRIVATE common_libs)
 # target_link_libraries(sphere PRIVATE common_libs)
 
 # # sphericalsolsys sample
-# add_executable(sphericalsolsys "${SAMPLES_DIR}/sphericalsolsys.cpp")
-# target_link_libraries(sphericalsolsys PRIVATE common_libs)
+add_executable(sphericalsolsys "${SAMPLES_DIR}/sphericalsolsys.cpp")
+target_link_libraries(sphericalsolsys PRIVATE common_libs)
